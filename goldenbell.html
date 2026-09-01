@@ -547,6 +547,7 @@ function submitResult(totalTimeSec){
   })
   .then(res => res.json())
   .then(data => {
+    console.log('서버 응답 데이터:', data); // 디버깅용: 콘솔에서 실제 순위 데이터 확인
     document.getElementById('rankLoading').style.display = 'none';
     document.getElementById('rankContent').style.display = 'block';
     document.getElementById('myRank').textContent = `나의 현재 순위: 전체 중 ${data.rank}위 (총 ${data.total}명)`;
