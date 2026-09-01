@@ -247,7 +247,7 @@
 /* =========================================================
    ⚠️ 아래 SCRIPT_URL 을 본인의 Google Apps Script 배포 URL로 교체하세요
    ========================================================= */
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwnMqcC1oWTyt2fe2r9uuJ9Ic-rQTD-DH2Be4b8--wadMy9bzUnuqgCtwMgKS6s3qbvIw/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/여기에_본인의_배포ID를_넣으세요/exec";
 
 /* ---------------- 보안: 드래그/선택/우클릭 방지 ---------------- */
 document.addEventListener('selectstart', e => e.preventDefault());
@@ -319,11 +319,21 @@ function showScreen(id){
 }
 
 /* ---------------- 기기 중복 참여 체크 ---------------- */
+/* ⚠️ [디버그 모드] 아래 두 줄을 주석 처리해서 중복 참여 체크를 임시로 껐습니다.
+   실제 행사 운영 전에는 반드시 원래대로 되돌려 주세요.
+   원래 코드:
+   function hasAlreadyParticipated(){
+     return localStorage.getItem('spacequiz_done') === 'true';
+   }
+   function markParticipated(){
+     localStorage.setItem('spacequiz_done', 'true');
+   }
+*/
 function hasAlreadyParticipated(){
-  return localStorage.getItem('spacequiz_done') === 'true';
+  return false; // 디버그 모드: 항상 false (중복 체크 안 함)
 }
 function markParticipated(){
-  localStorage.setItem('spacequiz_done', 'true');
+  // 디버그 모드: 아무 동작 안 함 (localStorage에 기록하지 않음)
 }
 
 window.addEventListener('DOMContentLoaded', () => {
