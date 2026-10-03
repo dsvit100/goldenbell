@@ -168,6 +168,14 @@
   .review-item .rx{ color:var(--danger); font-weight:700; margin-bottom:6px; }
   .review-item .re{ color:#555; font-size:.9rem; line-height:1.4; }
 
+  .prize{width:100%;margin-top:16px;border-radius:20px;padding:20px;background:#fff;color:var(--text-dark);text-align:left;font-size:.92rem;line-height:1.5}
+  .prize h3{margin:0 0 8px;font-size:1.15rem}
+  .prize .warn{background:#fff4d6;border-radius:12px;padding:10px 12px;font-size:.84rem}
+  .prize .ok{background:#e3fff3;border-radius:12px;padding:10px 12px}
+  .prize input[type=text],.prize input[type=tel]{width:100%;margin:4px 0 10px;padding:12px;border:2px solid #d5d9f5;border-radius:12px;font-size:1rem}
+  .prize label.chk{display:flex;gap:8px;align-items:flex-start;margin:8px 0;font-size:.85rem;font-weight:700}
+  .prize details{font-size:.8rem;color:#444;background:#f3f4fb;border-radius:10px;padding:8px 10px;margin:6px 0}
+  .mini-btn{margin-top:10px;padding:10px 14px;border-radius:12px;border:none;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
   .loading{ text-align:center; color:#cfd2ff; margin-top:16px; font-size:.9rem; }
   .footer-note{ margin-top:26px; font-size:.75rem; color:#7d81ad; text-align:center; }
 </style>
@@ -192,7 +200,8 @@
         😊 이미 참여하셨습니다!<br>참여해 주셔서 감사합니다.
       </div>
     </div>
-    <p class="footer-note">* 1인 1회 참여 가능합니다 (동일 기기 기준)</p>
+    <button class="review-toggle" id="btnLookup">📊 내 순위 다시 확인하기 (이름·번호 입력 후)</button>
+    <p class="footer-note">🎁 1위(정답 수 ↓ 소요시간 순)에게는 우주 도서를 집으로 보내드려요!<br>* 1인 1회 참여 가능합니다 (동일 기기 기준)</p>
   </div>
 
   <!-- ================= 퀴즈 화면 ================= -->
@@ -235,8 +244,11 @@
       <div id="rankContent" style="display:none;">
         <div class="my-rank" id="myRank">나의 순위: -</div>
         <div id="top3List"></div>
+        <div class="loading" id="rankNote"></div>
+        <button class="mini-btn" onclick="refresh(true)">🔄 지금 새로고침</button>
       </div>
     </div>
+    <div class="prize" id="prizeCard" style="display:none"></div>
 
     <p class="footer-note">우주과학관 우주 퀴즈 QR 골든벨에 참여해 주셔서 감사합니다 🌌</p>
   </div>
@@ -247,7 +259,7 @@
 /* =========================================================
    ⚠️ 아래 SCRIPT_URL 을 본인의 Google Apps Script 배포 URL로 교체하세요
    ========================================================= */
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwnMqcC1oWTyt2fe2r9uuJ9Ic-rQTD-DH2Be4b8--wadMy9bzUnuqgCtwMgKS6s3qbvIw/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyZhF2JUZ_kEAFQkq4tJxD8CJ439ErtrpglCYjhkw8fh_uoTVifJXerjxhCMUfApdeviA/exec";
 
 /* ---------------- 보안: 드래그/선택/우클릭 방지 ---------------- */
 document.addEventListener('selectstart', e => e.preventDefault());
@@ -319,21 +331,16 @@ function showScreen(id){
 }
 
 /* ---------------- 기기 중복 참여 체크 ---------------- */
-/* ⚠️ [디버그 모드] 아래 두 줄을 주석 처리해서 중복 참여 체크를 임시로 껐습니다.
-   실제 행사 운영 전에는 반드시 원래대로 되돌려 주세요.
-   원래 코드:
-   function hasAlreadyParticipated(){
-     return localStorage.getItem('spacequiz_done') === 'true';
-   }
-   function markParticipated(){
-     localStorage.setItem('spacequiz_done', 'true');
-   }
-*/
+/* 테스트용: false = 중복 참여 제한 해제 / 실제 운영 시 true 로 변경 */
+const ENABLE_DEVICE_LIMIT = false;
+
 function hasAlreadyParticipated(){
-  return false; // 디버그 모드: 항상 false (중복 체크 안 함)
+  if(!ENABLE_DEVICE_LIMIT) return false;
+  return localStorage.getItem('spacequiz_done') === 'true';
 }
 function markParticipated(){
-  // 디버그 모드: 아무 동작 안 함 (localStorage에 기록하지 않음)
+  if(!ENABLE_DEVICE_LIMIT) return;
+  localStorage.setItem('spacequiz_done', 'true');
 }
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -341,8 +348,6 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('blockNotice').style.display = 'block';
     document.getElementById('btnStart').disabled = true;
     document.getElementById('btnStart').style.opacity = '0.5';
-    document.getElementById('inputName').disabled = true;
-    document.getElementById('inputPhone').disabled = true;
   }
 });
 
@@ -531,41 +536,87 @@ function maskName(name){
   return name[0] + '*'.repeat(name.length-2) + name[name.length-1];
 }
 
-/* ---------------- 결과 제출 (Google Apps Script로 전송) ---------------- */
+/* ---------------- 서버 통신 / 순위·상품 ---------------- */
+const PRIZE_NAME = '우주 관련 도서';
+let me=null, pollT=null, prizeKey='', lookupMode=false;
+const GET=p=>fetch(SCRIPT_URL+'?'+new URLSearchParams(p)).then(r=>r.json());
+const POST=o=>fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(o)}).then(r=>r.json());
+const $=id=>document.getElementById(id);
+
 function submitResult(totalTimeSec){
-  const payload = {
-    name: userName,
-    phone: userPhone,
-    correct: correctCount,
-    time: totalTimeSec
-  };
+  me={name:userName, phone:userPhone}; lookupMode=false; prizeKey='';
+  POST({action:'submit', name:userName, phone:userPhone, correct:correctCount, time:totalTimeSec})
+    .then(renderStatus).catch(netErr);
+}
+function netErr(e){ $('rankLoading').style.display='block'; $('rankLoading').textContent='⚠️ 순위 정보를 불러오지 못했습니다. 네트워크 확인 후 새로고침을 눌러 주세요.'; console.error(e); }
+function refresh(manual){
+  if(!me) return;
+  GET({action:'status', name:me.name, phone:me.phone}).then(renderStatus).catch(manual?netErr:()=>{});
+}
+$('btnLookup').addEventListener('click', () => {
+  const name=$('inputName').value.trim(), phone=$('inputPhone').value.trim();
+  if(!name || !/^\d{4}$/.test(phone)){ alert('참여 때 입력한 이름과 번호 뒷 4자리를 입력해 주세요.'); return; }
+  me={name,phone}; lookupMode=true; prizeKey='';
+  $('stampText').textContent='📊 내 순위 확인'; $('btnReview').style.display='none'; $('reviewList').classList.remove('open');
+  $('rankLoading').style.display='block'; $('rankLoading').textContent='순위를 불러오는 중...'; $('rankContent').style.display='none'; $('prizeCard').style.display='none';
+  showScreen('screen-result'); refresh(true);
+});
 
-  fetch(SCRIPT_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // preflight 방지
-    body: JSON.stringify(payload)
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log('서버 응답 데이터:', data); // 디버깅용: 콘솔에서 실제 순위 데이터 확인
-    document.getElementById('rankLoading').style.display = 'none';
-    document.getElementById('rankContent').style.display = 'block';
-    document.getElementById('myRank').textContent = `나의 현재 순위: 전체 중 ${data.rank}위 (총 ${data.total}명)`;
+function renderStatus(d){
+  if(d.error){ alert(d.error); if(lookupMode) showScreen('screen-start'); return; }
+  $('rankLoading').style.display='none'; $('rankContent').style.display='block';
+  $('resultCorrect').textContent=`${d.correct} / ${TOTAL_QUESTIONS}`; $('resultTime').textContent=`${d.time}초`;
+  $('myRank').textContent=`나의 현재 순위: ${d.rank}위 (총 ${d.total}명)`;
+  const medals=['🥇','🥈','🥉'], w=$('top3List'); w.innerHTML='';
+  (d.top3||[]).forEach((r,i)=>{ const div=document.createElement('div'); div.className='leader-row';
+    div.innerHTML=`<span><span class="medal">${medals[i]}</span>${r.name}</span><span>${r.correct}개 / ${r.time}초</span>`; w.appendChild(div); });
+  $('rankNote').innerHTML = d.closed ? '🏁 행사가 종료되어 순위가 확정되었어요.' :
+    '※ 다른 참가자가 참여할 때마다 순위가 바뀔 수 있어요.<br>순위는 ①정답 수 ②빠른 시간 ③먼저 참여한 순서로 정해져요.<br>이 화면은 30초마다 자동 갱신돼요. ('+new Date().toLocaleTimeString('ko-KR')+' 기준)';
+  renderPrize(d);
+  clearInterval(pollT); if(!d.closed) pollT=setInterval(()=>refresh(false),30000);
+}
 
-    const top3Wrap = document.getElementById('top3List');
-    top3Wrap.innerHTML = '';
-    const medals = ['🥇','🥈','🥉'];
-    (data.top3 || []).forEach((row, idx) => {
-      const div = document.createElement('div');
-      div.className = 'leader-row';
-      div.innerHTML = `<span><span class="medal">${medals[idx] || ''}</span>${row.name}</span><span>${row.correct}개 / ${row.time}초</span>`;
-      top3Wrap.appendChild(div);
-    });
-  })
-  .catch(err => {
-    document.getElementById('rankLoading').textContent = '⚠️ 순위 정보를 불러오지 못했습니다. (네트워크 확인)';
-    console.error(err);
-  });
+function renderPrize(d){
+  const fk='sq_first_'+me.name+me.phone, first=d.rank===1;
+  let st = first ? (d.claimed?'claimed':'open') : (localStorage.getItem(fk)?'lost':'wait');
+  if(first) localStorage.setItem(fk,'1');
+  const t1=(d.top3||[])[0], key=st+d.closed+(st==='wait'&&t1?t1.correct+'/'+t1.time:'');
+  if(key===prizeKey) return;           // 입력 중인 폼이 갱신으로 지워지지 않도록
+  prizeKey=key; const c=$('prizeCard'); c.style.display='block';
+  const head=`<h3>🎁 1위 상품: ${PRIZE_NAME}</h3>`;
+  if(st==='open') c.innerHTML=head+`<p>지금 <b>1위</b>예요! 🥇 상품을 집으로 보내드리려면 <b>배송 정보</b>가 필요해요. 1위가 아닌 분께는 주소·연락처를 받지 않아요.</p>
+    <p class="warn">⚠️ 순위는 계속 바뀔 수 있어요. ${d.closed?'':'행사 종료 시점의 1위께만 발송돼요. 1위 자리를 내주면 입력하신 정보는 <b>즉시 자동 삭제</b>돼요. 이 화면에서 순위를 계속 확인해 주세요.'}</p>`+CLAIM_FORM;
+  else if(st==='claimed') c.innerHTML=head+`<p class="ok">✅ 현재 1위이며 배송 정보가 등록되어 있어요.<br>${d.closed?'🎉 최종 1위 확정! 입력하신 연락처로 안내드릴게요.':'끝까지 1위를 지키면 발송돼요. 1위를 내주면 정보는 자동 삭제돼요.'}</p>
+    ${d.closed?'':'<button class="mini-btn" onclick="showForm()">✏️ 정보 다시 입력하기</button><div id="reform"></div>'}`;
+  else if(st==='lost') c.innerHTML=head+`<p class="warn">😢 아쉽게도 1위 자리를 다른 참가자에게 내주었어요.<br>입력하신 배송 정보는 <b>자동으로 삭제</b>되었어요. 다시 도전하려면 행사 안내를 확인해 주세요!</p>`;
+  else c.innerHTML=head+`<p>1위가 되면 이 자리에 <b>배송 정보 입력창</b>이 열려요.${t1?`<br>현재 1위 기록: <b>${t1.correct}개 / ${t1.time}초</b>`:''}</p>
+    <p class="warn">수령 주소·연락처는 1위에게만, 개인정보 동의 후에 받아요.</p>`;
+}
+function showForm(){ $('reform').innerHTML=CLAIM_FORM; }
+
+const CLAIM_FORM=`<div class="pf">
+  <label>받는 분 이름<input type="text" id="cName" maxlength="20" autocomplete="off"></label>
+  <label>연락처 (숫자만)<input type="tel" id="cTel" maxlength="13" inputmode="numeric" placeholder="01012345678"></label>
+  <label>우편번호<input type="tel" id="cZip" maxlength="5" inputmode="numeric"></label>
+  <label>주소<input type="text" id="cAddr" maxlength="100"></label>
+  <label>상세주소<input type="text" id="cAddr2" maxlength="60"></label>
+  <details><summary>개인정보 수집·이용 안내 (펼쳐서 확인)</summary>
+    · 수집 주체: 우주과학관<br>· 수집 항목: 받는 분 이름, 연락처, 우편번호, 주소<br>· 이용 목적: 1위 상품 배송 및 당첨 안내<br>
+    · 보유 기간: 상품 발송 후 30일 이내 파기 (1위를 내준 경우 즉시 삭제)<br>
+    · 동의를 거부할 수 있으며, 거부 시 상품 발송이 어렵습니다.<br>· 상품은 국내 배송만 가능합니다.</details>
+  <label class="chk"><input type="checkbox" id="cConsent"> [필수] 위 개인정보 수집·이용에 동의합니다.</label>
+  <label class="chk"><input type="checkbox" id="cAge"> [필수] 만 14세 이상이거나, 만 14세 미만인 경우 법정대리인의 동의를 받았습니다.</label>
+  <button class="big-btn" onclick="sendClaim()">📦 배송 정보 제출</button></div>`;
+
+function sendClaim(){
+  const g=id=>$(id).value.trim(), tel=g('cTel').replace(/-/g,'');
+  if(!g('cName')||!g('cAddr')||!g('cAddr2')) return alert('이름과 주소를 모두 입력해 주세요.');
+  if(!/^01\d{8,9}$/.test(tel)) return alert('연락처를 휴대폰 번호 형식으로 입력해 주세요.');
+  if(!/^\d{5}$/.test(g('cZip'))) return alert('우편번호 5자리를 입력해 주세요.');
+  if(!$('cConsent').checked||!$('cAge').checked) return alert('필수 동의 항목에 체크해 주세요.');
+  POST({action:'claim', name:me.name, phone:me.phone, receiver:g('cName'), tel, zip:g('cZip'), addr:g('cAddr'), addr2:g('cAddr2'), consent:true})
+   .then(r=>{ if(!r.ok) return alert(r.error||'제출에 실패했어요.'); alert('✅ 등록되었어요! 1위를 지키면 발송해 드려요.'); prizeKey=''; refresh(true); })
+   .catch(()=>alert('네트워크 오류가 발생했어요. 다시 시도해 주세요.'));
 }
 </script>
 </body>
