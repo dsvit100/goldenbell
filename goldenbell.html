@@ -176,6 +176,8 @@
   .prize label.chk{display:flex;gap:8px;align-items:flex-start;margin:8px 0;font-size:.85rem;font-weight:700}
   .prize details{font-size:.8rem;color:#444;background:#f3f4fb;border-radius:10px;padding:8px 10px;margin:6px 0}
   .mini-btn{margin-top:10px;padding:10px 14px;border-radius:12px;border:none;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
+  .rank-card .loading,.result-summary .loading{ color:#555a80; }
+  .result-summary .review-toggle{ color:var(--accent); }
   .loading{ text-align:center; color:#cfd2ff; margin-top:16px; font-size:.9rem; }
   .footer-note{ margin-top:26px; font-size:.75rem; color:#7d81ad; text-align:center; }
 </style>
@@ -259,7 +261,7 @@
 /* =========================================================
    ⚠️ 아래 SCRIPT_URL 을 본인의 Google Apps Script 배포 URL로 교체하세요
    ========================================================= */
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwnMqcC1oWTyt2fe2r9uuJ9Ic-rQTD-DH2Be4b8--wadMy9bzUnuqgCtwMgKS6s3qbvIw/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyZhF2JUZ_kEAFQkq4tJxD8CJ439ErtrpglCYjhkw8fh_uoTVifJXerjxhCMUfApdeviA/exec";
 
 /* ---------------- 보안: 드래그/선택/우클릭 방지 ---------------- */
 document.addEventListener('selectstart', e => e.preventDefault());
@@ -548,7 +550,7 @@ function submitResult(totalTimeSec){
   POST({action:'submit', name:userName, phone:userPhone, correct:correctCount, time:totalTimeSec})
     .then(renderStatus).catch(netErr);
 }
-function netErr(e){ $('rankLoading').style.display='block'; $('rankLoading').textContent='⚠️ 순위 정보를 불러오지 못했습니다. 네트워크 확인 후 새로고침을 눌러 주세요.'; console.error(e); }
+function netErr(e){ $('rankLoading').style.display='block'; $('rankLoading').innerHTML='⚠️ 순위 정보를 불러오지 못했습니다.<br>잠시 후 다시 시도해 주세요.<br><button class="mini-btn" onclick="refresh(true)">🔄 다시 시도</button>'; console.error(e); }
 function refresh(manual){
   if(!me) return;
   GET({action:'status', name:me.name, phone:me.phone}).then(renderStatus).catch(manual?netErr:()=>{});
@@ -588,7 +590,7 @@ function renderPrize(d){
     <p class="warn">⚠️ 순위는 계속 바뀔 수 있어요. ${d.closed?'':'행사 종료 시점의 1위께만 발송돼요. 1위 자리를 내주면 입력하신 정보는 <b>즉시 자동 삭제</b>돼요. 이 화면에서 순위를 계속 확인해 주세요.'}</p>`+CLAIM_FORM;
   else if(st==='claimed') c.innerHTML=head+`<p class="ok">✅ 현재 1위이며 배송 정보가 등록되어 있어요.<br>${d.closed?'🎉 최종 1위 확정! 입력하신 연락처로 안내드릴게요.':'끝까지 1위를 지키면 발송돼요. 1위를 내주면 정보는 자동 삭제돼요.'}</p>
     ${d.closed?'':'<button class="mini-btn" onclick="showForm()">✏️ 정보 다시 입력하기</button><div id="reform"></div>'}`;
-  else if(st==='lost') c.innerHTML=head+`<p class="warn">😢 아쉽게도 1위 자리를 다른 참가자에게 내주었어요.<br>입력하신 배송 정보는 <b>자동으로 삭제</b>되었어요. 다시 도전하려면 행사 안내를 확인해 주세요!</p>`;
+  else if(st==='lost') c.innerHTML=head+`<p class="warn">😢 아쉽게도 1위 자리를 다른 참가자에게 내주었어요.<br>입력하신 배송 정보는 <b>자동으로 삭제</b>되었어요.</p>`;
   else c.innerHTML=head+`<p>1위가 되면 이 자리에 <b>배송 정보 입력창</b>이 열려요.${t1?`<br>현재 1위 기록: <b>${t1.correct}개 / ${t1.time}초</b>`:''}</p>
     <p class="warn">수령 주소·연락처는 1위에게만, 개인정보 동의 후에 받아요.</p>`;
 }
@@ -597,24 +599,21 @@ function showForm(){ $('reform').innerHTML=CLAIM_FORM; }
 const CLAIM_FORM=`<div class="pf">
   <label>받는 분 이름<input type="text" id="cName" maxlength="20" autocomplete="off"></label>
   <label>연락처 (숫자만)<input type="tel" id="cTel" maxlength="13" inputmode="numeric" placeholder="01012345678"></label>
-  <label>우편번호<input type="tel" id="cZip" maxlength="5" inputmode="numeric"></label>
-  <label>주소<input type="text" id="cAddr" maxlength="100"></label>
-  <label>상세주소<input type="text" id="cAddr2" maxlength="60"></label>
+  <label>주소 (동·호수까지 자세히 적어 주세요)<input type="text" id="cAddr" maxlength="150" placeholder="예) 인천시 ○○구 ○○로 12, 101동 1203호"></label>
   <details><summary>개인정보 수집·이용 안내 (펼쳐서 확인)</summary>
-    · 수집 주체: 우주과학관<br>· 수집 항목: 받는 분 이름, 연락처, 우편번호, 주소<br>· 이용 목적: 1위 상품 배송 및 당첨 안내<br>
+    · 수집 주체: 우주과학관<br>· 수집 항목: 받는 분 이름, 연락처, 주소(동·호수 포함)<br>· 이용 목적: 1위 상품 배송 및 당첨 안내<br>
     · 보유 기간: 상품 발송 후 30일 이내 파기 (1위를 내준 경우 즉시 삭제)<br>
-    · 동의를 거부할 수 있으며, 거부 시 상품 발송이 어렵습니다.<br>· 상품은 국내 배송만 가능합니다.</details>
+    · 동의를 거부할 수 있으며, 거부 시 상품 발송이 어렵습니다.<br>· 상품은 국내 배송만 가능합니다.<br>· 주소나 연락처가 정확하지 않거나 빠져 있으면 배송이 어려울 수 있어요. 제출 전에 한 번만 더 확인해 주세요.</details>
   <label class="chk"><input type="checkbox" id="cConsent"> [필수] 위 개인정보 수집·이용에 동의합니다.</label>
   <label class="chk"><input type="checkbox" id="cAge"> [필수] 만 14세 이상이거나, 만 14세 미만인 경우 법정대리인의 동의를 받았습니다.</label>
   <button class="big-btn" onclick="sendClaim()">📦 배송 정보 제출</button></div>`;
 
 function sendClaim(){
   const g=id=>$(id).value.trim(), tel=g('cTel').replace(/-/g,'');
-  if(!g('cName')||!g('cAddr')||!g('cAddr2')) return alert('이름과 주소를 모두 입력해 주세요.');
+  if(!g('cName')||g('cAddr').length<8) return alert('받는 분 이름과 주소(동·호수까지)를 자세히 입력해 주세요.');
   if(!/^01\d{8,9}$/.test(tel)) return alert('연락처를 휴대폰 번호 형식으로 입력해 주세요.');
-  if(!/^\d{5}$/.test(g('cZip'))) return alert('우편번호 5자리를 입력해 주세요.');
   if(!$('cConsent').checked||!$('cAge').checked) return alert('필수 동의 항목에 체크해 주세요.');
-  POST({action:'claim', name:me.name, phone:me.phone, receiver:g('cName'), tel, zip:g('cZip'), addr:g('cAddr'), addr2:g('cAddr2'), consent:true})
+  POST({action:'claim', name:me.name, phone:me.phone, receiver:g('cName'), tel, addr:g('cAddr'), consent:true})
    .then(r=>{ if(!r.ok) return alert(r.error||'제출에 실패했어요.'); alert('✅ 등록되었어요! 1위를 지키면 발송해 드려요.'); prizeKey=''; refresh(true); })
    .catch(()=>alert('네트워크 오류가 발생했어요. 다시 시도해 주세요.'));
 }
