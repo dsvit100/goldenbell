@@ -587,10 +587,10 @@ function renderPrize(d){
   prizeKey=key; const c=$('prizeCard'); c.style.display='block';
   const head=`<h3>🎁 1위 상품: ${PRIZE_NAME}</h3>`;
   if(st==='open') c.innerHTML=head+`<p>지금 <b>1위</b>예요! 🥇 상품을 집으로 보내드리려면 <b>배송 정보</b>가 필요해요. 1위가 아닌 분께는 주소·연락처를 받지 않아요.</p>
-    <p class="warn">⚠️ 순위는 계속 바뀔 수 있어요. ${d.closed?'':'행사 종료 시점의 1위께만 발송돼요. 1위 자리를 내주면 입력하신 정보는 <b>즉시 자동 삭제</b>돼요. 이 화면에서 순위를 계속 확인해 주세요.'}</p>`+CLAIM_FORM;
+    <p class="warn">⚠️ 순위는 계속 바뀔 수 있어요. ${d.closed?'':'행사 종료 시점의 1위께만 발송돼요. 1위 자리를 내주면 입력하신 정보는 <b>자동으로 삭제</b>돼요. 이 화면에서 순위를 계속 확인해 주세요.'}</p>`+CLAIM_FORM;
   else if(st==='claimed') c.innerHTML=head+`<p class="ok">✅ 현재 1위이며 배송 정보가 등록되어 있어요.<br>${d.closed?'🎉 최종 1위 확정! 입력하신 연락처로 안내드릴게요.':'끝까지 1위를 지키면 발송돼요. 1위를 내주면 정보는 자동 삭제돼요.'}</p>
     ${d.closed?'':'<button class="mini-btn" onclick="showForm()">✏️ 정보 다시 입력하기</button><div id="reform"></div>'}`;
-  else if(st==='lost') c.innerHTML=head+`<p class="warn">😢 아쉽게도 1위 자리를 다른 참가자에게 내주었어요.<br>입력하신 배송 정보는 <b>자동으로 삭제</b>되었어요.</p>`;
+  else if(st==='lost') c.innerHTML=head+`<p class="warn">😢 아쉽게도 1위 자리를 다른 참가자에게 내주었어요.<br>입력하신 배송 정보는 <b>자동으로 삭제</b>돼요.</p>`;
   else c.innerHTML=head+`<p>1위가 되면 이 자리에 <b>배송 정보 입력창</b>이 열려요.${t1?`<br>현재 1위 기록: <b>${t1.correct}개 / ${t1.time}초</b>`:''}</p>
     <p class="warn">수령 주소·연락처는 1위에게만, 개인정보 동의 후에 받아요.</p>`;
 }
@@ -598,12 +598,12 @@ function showForm(){ $('reform').innerHTML=CLAIM_FORM; }
 
 const CLAIM_FORM=`<div class="pf">
   <label>받는 분 이름<input type="text" id="cName" maxlength="20" autocomplete="off"></label>
-  <label>연락처 (숫자만)<input type="tel" id="cTel" maxlength="13" inputmode="numeric" placeholder="01012345678"></label>
+  <label>휴대전화 번호(숫자만)<input type="tel" id="cTel" maxlength="13" inputmode="numeric" placeholder="01012345678"></label>
   <label>주소 (동·호수까지 자세히 적어 주세요)<input type="text" id="cAddr" maxlength="150" placeholder="예) 인천시 ○○구 ○○로 12, 101동 1203호"></label>
   <details><summary>개인정보 수집·이용 안내 (펼쳐서 확인)</summary>
-    · 수집 주체: 우주과학관<br>· 수집 항목: 받는 분 이름, 연락처, 주소(동·호수 포함)<br>· 이용 목적: 1위 상품 배송 및 당첨 안내<br>
-    · 보유 기간: 상품 발송 후 30일 이내 파기 (1위를 내준 경우 즉시 삭제)<br>
-    · 동의를 거부할 수 있으며, 거부 시 상품 발송이 어렵습니다.<br>· 상품은 국내 배송만 가능합니다.<br>· 주소나 연락처가 정확하지 않거나 빠져 있으면 배송이 어려울 수 있어요. 제출 전에 한 번만 더 확인해 주세요.</details>
+    · 수집 주체: 부천천문과학관<br>· 수집 항목: 받는 분 이름, 연락처, 주소(동·호수 포함)<br>· 이용 목적: 1위 상품 배송 및 당첨 안내<br>
+    · 보유 기간: 상품 발송 후 30일 이내 파기<br>
+    · 동의를 거부할 수 있으며, 거부 시 상품 발송이 어렵습니다.<br>· 상품은 국내 배송만 가능합니다.<br>· 주소나 연락처가 정확하지 않은 경우 배송이 불가합니다.<br> 이로 인한 발송 불가 혹은 오발송 시 책임져 드릴 수 없으므로 제출 전에 한 번만 더 확인해 주세요.</details>
   <label class="chk"><input type="checkbox" id="cConsent"> [필수] 위 개인정보 수집·이용에 동의합니다.</label>
   <label class="chk"><input type="checkbox" id="cAge"> [필수] 만 14세 이상이거나, 만 14세 미만인 경우 법정대리인의 동의를 받았습니다.</label>
   <button class="big-btn" onclick="sendClaim()">📦 배송 정보 제출</button></div>`;
@@ -611,7 +611,7 @@ const CLAIM_FORM=`<div class="pf">
 function sendClaim(){
   const g=id=>$(id).value.trim(), tel=g('cTel').replace(/-/g,'');
   if(!g('cName')||g('cAddr').length<8) return alert('받는 분 이름과 주소(동·호수까지)를 자세히 입력해 주세요.');
-  if(!/^01\d{8,9}$/.test(tel)) return alert('연락처를 휴대폰 번호 형식으로 입력해 주세요.');
+  if(!/^01\d{8,9}$/.test(tel)) return alert('연락처를 010, 011로 시작되는 휴대폰 번호 형식으로 입력해 주세요.');
   if(!$('cConsent').checked||!$('cAge').checked) return alert('필수 동의 항목에 체크해 주세요.');
   POST({action:'claim', name:me.name, phone:me.phone, receiver:g('cName'), tel, addr:g('cAddr'), consent:true})
    .then(r=>{ if(!r.ok) return alert(r.error||'제출에 실패했어요.'); alert('✅ 등록되었어요! 1위를 지키면 발송해 드려요.'); prizeKey=''; refresh(true); })
