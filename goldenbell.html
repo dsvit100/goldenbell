@@ -122,6 +122,9 @@
   .option-btn.wrong{ background:var(--danger); color:#fff; }
   .option-btn.wrong .badge{ background:#fff; color:var(--danger); }
   .option-btn.disabled{ pointer-events:none; opacity:.85; }
+  .option-btn.selected{ background:#eef1ff; outline:3px solid var(--accent); }
+  .big-btn:disabled{ opacity:.4; box-shadow:none; cursor:not-allowed; }
+  .big-btn:disabled:active{ transform:none; }
 
   /* 결과 화면 */
   .result-summary{
@@ -210,7 +213,6 @@
   <div class="screen" id="screen-quiz">
     <div class="quiz-top">
       <span id="qProgress">문제 1 / 15</span>
-      <span id="qScore">맞은 개수: 0</span>
     </div>
     <div class="timer-wrap"><div class="timer-bar" id="timerBar"></div></div>
     <div class="question-card">
@@ -218,6 +220,7 @@
       <div class="q-text" id="qText">문제 내용</div>
     </div>
     <div class="options" id="optionsWrap"></div>
+    <button class="big-btn" id="btnNext" disabled>다음 ▶</button>
   </div>
 
   <!-- ================= 결과 화면 ================= -->
@@ -285,21 +288,21 @@ document.addEventListener('contextmenu', e => e.preventDefault());
 
 /* ---------------- 퀴즈 데이터 (15문제, 우주 상식) ---------------- */
 const QUIZ_BANK = [
-  { q:"태양계에서 가장 큰 행성은 무엇일까요?", options:["목성","지구","화성"], answer:"목성", explain:"목성은 태양계에서 가장 큰 행성으로, 지구보다 약 11배 더 큽니다." },
-  { q:"지구에서 가장 가까운 천체는 무엇일까요?", options:["태양","달","금성"], answer:"달", explain:"달은 지구의 유일한 자연 위성으로, 지구에서 가장 가까운 천체입니다." },
-  { q:"태양계에서 태양과 가장 가까운 행성은?", options:["수성","금성","지구"], answer:"수성", explain:"수성은 태양에서 가장 가까운 첫 번째 행성입니다." },
-  { q:"'빨간 행성'이라고 불리는 행성은?", options:["금성","화성","천왕성"], answer:"화성", explain:"화성은 표면의 산화철(녹) 때문에 붉은색을 띠어 '빨간 행성'이라 불립니다." },
-  { q:"우리 은하의 이름은 무엇일까요?", options:["안드로메다 은하","우리은하(은하수)","소마젤란은하"], answer:"우리은하(은하수)", explain:"태양계가 속한 은하는 '우리은하' 또는 '은하수'라고 부릅니다." },
-  { q:"사람이 최초로 달에 착륙한 우주선의 이름은?", options:["아폴로 11호","보이저 1호","스푸트니크 1호"], answer:"아폴로 11호", explain:"1969년 아폴로 11호가 인류 최초로 달에 착륙했습니다." },
-  { q:"별이 반짝이는 이유는 무엇 때문일까요?", options:["별이 움직여서","지구 대기 때문에","별이 회전해서"], answer:"지구 대기 때문에", explain:"별빛이 지구 대기를 통과하며 굴절되어 반짝이는 것처럼 보입니다." },
-  { q:"태양계에서 고리가 가장 유명한 행성은?", options:["토성","해왕성","지구"], answer:"토성", explain:"토성은 얼음과 암석으로 이루어진 아름다운 고리로 유명합니다." },
-  { q:"우주비행사가 입는 옷을 무엇이라고 할까요?", options:["우주복","방한복","잠수복"], answer:"우주복", explain:"우주복은 우주의 진공과 온도 변화로부터 우주비행사를 보호합니다." },
-  { q:"태양계에서 가장 작은 행성은?", options:["수성","화성","명왕성"], answer:"수성", explain:"수성은 태양계 8개 행성 중 크기가 가장 작습니다. (명왕성은 왜소행성입니다)" },
-  { q:"블랙홀에 대한 설명으로 알맞은 것은?", options:["빛도 빠져나올 수 없는 천체","아주 밝은 별","작은 소행성"], answer:"빛도 빠져나올 수 없는 천체", explain:"블랙홀은 중력이 매우 강해 빛조차 빠져나올 수 없는 천체입니다." },
-  { q:"별똥별(유성)의 정체는 무엇일까요?", options:["떨어지는 별 자체","대기권에서 타는 작은 돌 조각","달의 파편"], answer:"대기권에서 타는 작은 돌 조각", explain:"유성은 우주의 작은 돌 조각이 대기권에 진입하며 타는 현상입니다." },
-  { q:"국제우주정거장의 약자는 무엇일까요?", options:["ISS","NASA","UFO"], answer:"ISS", explain:"ISS(International Space Station)는 여러 나라가 함께 운영하는 우주정거장입니다." },
-  { q:"태양계에서 가장 큰 화산이 있는 행성은?", options:["화성","금성","목성"], answer:"화성", explain:"화성에는 태양계 최대 화산인 '올림푸스 몬스'가 있습니다." },
-  { q:"우주에는 소리가 들릴까요?", options:["잘 들린다","공기가 없어 소리가 전달되지 않는다","가끔 들린다"], answer:"공기가 없어 소리가 전달되지 않는다", explain:"소리는 공기 같은 매질이 있어야 전달되는데, 우주는 진공이라 소리가 전달되지 않습니다." }
+  { q:"태양계에서 가장 큰 행성은 무엇일까요?", options:["목성","지구","화성"], answer:"목성", explain:"목성은 태양계에서 가장 큰 행성이에요. 지름이 지구의 약 11배나 돼요." },
+  { q:"우주에서 지구와 가장 가까이 있는 이웃은 무엇일까요?", options:["태양","달","금성"], answer:"달", explain:"달은 지구에서 약 38만 km 떨어져 있어요. 태양이나 금성은 이보다 훨씬 멀리 있어요." },
+  { q:"태양계에서 태양과 가장 가까운 행성은?", options:["수성","금성","지구"], answer:"수성", explain:"수성은 태양에서 가장 가까운 첫 번째 행성이에요. 태양 주위를 약 88일 만에 한 바퀴 돌아요." },
+  { q:"'빨간 행성'이라고 불리는 행성은?", options:["금성","화성","천왕성"], answer:"화성", explain:"화성의 흙에는 철이 녹슨 가루(산화철)가 많아서 붉게 보여요." },
+  { q:"지구와 태양계가 속해 있는 은하의 이름은 무엇일까요?", options:["안드로메다 은하","우리은하(은하수)","소마젤란은하"], answer:"우리은하(은하수)", explain:"은하는 별이 아주 많이 모인 커다란 무리예요. 태양계는 우리은하 안에 있고, 밤하늘의 은하수는 우리은하를 안쪽에서 본 모습이에요." },
+  { q:"사람이 처음으로 달에 내린 우주선의 이름은?", options:["아폴로 11호","보이저 1호","스푸트니크 1호"], answer:"아폴로 11호", explain:"1969년 아폴로 11호의 우주비행사들이 사람 최초로 달 위를 걸었어요. 보이저 1호는 먼 우주로 간 탐사선, 스푸트니크 1호는 최초의 인공위성이에요." },
+  { q:"별이 반짝반짝 깜빡여 보이는 이유는 무엇 때문일까요?", options:["별이 움직여서","지구를 둘러싼 공기 때문에","별이 회전해서"], answer:"지구를 둘러싼 공기 때문에", explain:"별빛이 지구를 둘러싼 공기를 지날 때 공기가 흔들려서 빛이 이리저리 휘어요. 그래서 별이 반짝여 보여요." },
+  { q:"태양계에서 가장 넓고 뚜렷한 고리를 가진 행성은?", options:["토성","해왕성","지구"], answer:"토성", explain:"토성의 고리는 얼음 알갱이와 돌가루로 이루어졌고, 태양계에서 가장 넓고 뚜렷해요. 폭은 아주 넓지만 두께는 보통 10 m쯤으로 얇아요." },
+  { q:"우주비행사가 우주에서 입는 옷을 무엇이라고 할까요?", options:["우주복","방한복","잠수복"], answer:"우주복", explain:"우주에는 숨 쉴 공기가 없고, 아주 뜨겁거나 아주 추워요. 우주복은 숨 쉴 공기를 채워 주고 몸을 지켜 줘요." },
+  { q:"태양계에서 가장 작은 행성은?", options:["수성","화성","명왕성"], answer:"수성", explain:"수성은 태양계 8개 행성 중 가장 작아요. 명왕성은 수성보다 더 작은 '왜소행성'이라 행성에 들지 않아요." },
+  { q:"블랙홀에 대한 설명으로 알맞은 것은?", options:["빛도 빠져나오지 못할 만큼 끌어당기는 힘이 센 곳","아주 밝게 빛나는 별","작은 소행성"], answer:"빛도 빠져나오지 못할 만큼 끌어당기는 힘이 센 곳", explain:"블랙홀은 물질이 좁은 곳에 꽉 뭉쳐서 끌어당기는 힘(중력)이 엄청나게 센 곳이에요. 빛도 빠져나오지 못해서 직접 볼 수 없어요." },
+  { q:"별똥별(유성)의 정체는 무엇일까요?", options:["별이 떨어지는 것","우주의 작은 돌·먼지가 공기 속에서 빛나는 것","하늘에서 번개가 치는 것"], answer:"우주의 작은 돌·먼지가 공기 속에서 빛나는 것", explain:"별똥별은 진짜 별이 아니에요. 우주의 작은 돌 조각이 공기 속으로 아주 빠르게 들어오며 뜨거워져 빛나는 거예요." },
+  { q:"국제우주정거장의 영어 줄임말은 무엇일까요?", options:["ISS","NASA","UFO"], answer:"ISS", explain:"ISS는 International Space Station의 줄임말이에요. 여러 나라가 함께 운영하는 우주 속 연구실이에요." },
+  { q:"태양계에서 가장 큰 화산이 있는 행성은?", options:["화성","금성","목성"], answer:"화성", explain:"화성의 '올림푸스 몬스'는 태양계에서 가장 큰 화산이에요. 높이가 약 22 km로 에베레스트산의 2배가 넘어요." },
+  { q:"우주 공간에서는 소리가 들릴까요?", options:["잘 들린다","공기가 없어서 소리가 전달되지 않는다","별 가까이에서만 들린다"], answer:"공기가 없어서 소리가 전달되지 않는다", explain:"소리는 공기가 떨리면서 전달돼요. 우주 공간에는 공기가 거의 없어서 소리가 들리지 않아요." }
 ];
 
 const TOTAL_QUESTIONS = 15;
@@ -311,10 +314,11 @@ let quizSet = [];      // 섞인 문제+보기 세트
 let currentIndex = 0;
 let correctCount = 0;
 let wrongDetails = [];  // {q, correct, picked, explain}
-let quizStartTime = 0;
+let totalMs = 0;       // 문제별 소요시간 누적 (밀리초)
 let timerInterval = null;
 let timerStart = 0;
-let answered = false;
+let answered = false;   // true = 이번 문제 답 확정됨
+let selectedOpt = null; // 현재 선택한 보기 (확정 전, 변경 가능)
 
 /* ---------------- 유틸: 배열 셔플 ---------------- */
 function shuffleArray(arr){
@@ -324,6 +328,13 @@ function shuffleArray(arr){
     [a[i],a[j]] = [a[j],a[i]];
   }
   return a;
+}
+
+/* ---------------- 시간 표기: 초(소수 3자리) → "1분 23.456초" ---------------- */
+function fmtTime(sec){
+  const ms = Math.round(Number(sec) * 1000);
+  const m = Math.floor(ms / 60000), s = (ms % 60000) / 1000;
+  return (m > 0 ? m + '분 ' : '') + s.toFixed(3) + '초';
 }
 
 /* ---------------- 화면 전환 ---------------- */
@@ -377,7 +388,7 @@ document.getElementById('btnStart').addEventListener('click', () => {
   currentIndex = 0;
   correctCount = 0;
   wrongDetails = [];
-  quizStartTime = Date.now();
+  totalMs = 0;
 
   showScreen('screen-quiz');
   renderQuestion();
@@ -386,9 +397,10 @@ document.getElementById('btnStart').addEventListener('click', () => {
 /* ---------------- 문제 렌더링 ---------------- */
 function renderQuestion(){
   answered = false;
+  selectedOpt = null;
+  document.getElementById('btnNext').disabled = true;
   const item = quizSet[currentIndex];
   document.getElementById('qProgress').textContent = `문제 ${currentIndex+1} / ${TOTAL_QUESTIONS}`;
-  document.getElementById('qScore').textContent = `맞은 개수: ${correctCount}`;
   document.getElementById('qNumber').textContent = `Q${currentIndex+1}`;
   document.getElementById('qText').textContent = item.q;
 
@@ -399,7 +411,7 @@ function renderQuestion(){
     const btn = document.createElement('button');
     btn.className = 'option-btn';
     btn.innerHTML = `<span class="badge">${idx+1}</span><span>${opt}</span>`;
-    btn.addEventListener('click', () => selectAnswer(opt, btn));
+    btn.addEventListener('click', () => chooseOption(opt, btn));
     wrap.appendChild(btn);
   });
 
@@ -411,61 +423,53 @@ function startTimer(){
   clearInterval(timerInterval);
   const bar = document.getElementById('timerBar');
   bar.style.width = '100%';
-  timerStart = Date.now();
+  timerStart = performance.now();
 
   timerInterval = setInterval(() => {
-    const elapsed = Date.now() - timerStart;
+    const elapsed = performance.now() - timerStart;
     const remainRatio = Math.max(0, 1 - elapsed / TIME_LIMIT_MS);
     bar.style.width = (remainRatio*100) + '%';
     if(elapsed >= TIME_LIMIT_MS){
       clearInterval(timerInterval);
-      if(!answered) timeoutAnswer();
+      lockAnswer();   // 10초 종료 → 현재 선택값으로 자동 확정 (선택 없으면 시간 초과 오답)
     }
   }, 80);
 }
 
-/* ---------------- 시간 초과 처리 ---------------- */
-function timeoutAnswer(){
-  answered = true;
-  const item = quizSet[currentIndex];
-  wrongDetails.push({ q:item.q, correct:item.answer, picked:'(시간 초과)', explain:item.explain });
-
-  // 정답 표시만 하고 자동 다음 문제로
-  highlightAnswer(null);
-  setTimeout(nextQuestion, 900);
+/* ---------------- 보기 선택 (확정 전까지 자유롭게 변경 가능) ---------------- */
+function chooseOption(opt, btn){
+  if(answered) return;
+  selectedOpt = opt;
+  document.querySelectorAll('#optionsWrap .option-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('btnNext').disabled = false;
 }
 
-/* ---------------- 보기 선택 처리 ---------------- */
-function selectAnswer(picked, btnEl){
+/* ---------------- 답 확정 ([다음] 버튼 또는 10초 종료) ----------------
+   정답/오답 여부는 퀴즈가 모두 끝나 결과 화면이 나올 때까지 표시하지 않음 */
+function lockAnswer(){
   if(answered) return;
   answered = true;
   clearInterval(timerInterval);
+  document.getElementById('btnNext').disabled = true;
+  document.querySelectorAll('#optionsWrap .option-btn').forEach(b => b.classList.add('disabled'));
+
+  // 문제별 소요시간 누적 (밀리초, 문제당 최대 10초까지만 인정)
+  totalMs += Math.min(performance.now() - timerStart, TIME_LIMIT_MS);
 
   const item = quizSet[currentIndex];
-  const isCorrect = picked === item.answer;
-  if(isCorrect){
+  if(selectedOpt === null){
+    // 아무것도 선택하지 않음 → 무조건 오답(시간 초과) 처리, 임의 선택 없음
+    wrongDetails.push({ q:item.q, correct:item.answer, picked:'(시간 초과)', explain:item.explain });
+  } else if(selectedOpt === item.answer){
     correctCount++;
   } else {
-    wrongDetails.push({ q:item.q, correct:item.answer, picked:picked, explain:item.explain });
+    wrongDetails.push({ q:item.q, correct:item.answer, picked:selectedOpt, explain:item.explain });
   }
-  highlightAnswer(btnEl);
-  setTimeout(nextQuestion, 900);
+  nextQuestion();
 }
 
-/* ---------------- 정답/오답 하이라이트 ---------------- */
-function highlightAnswer(clickedBtn){
-  const item = quizSet[currentIndex];
-  const buttons = document.querySelectorAll('#optionsWrap .option-btn');
-  buttons.forEach(btn => {
-    btn.classList.add('disabled');
-    const label = btn.querySelector('span:last-child').textContent;
-    if(label === item.answer){
-      btn.classList.add('correct');
-    } else if(btn === clickedBtn){
-      btn.classList.add('wrong');
-    }
-  });
-}
+document.getElementById('btnNext').addEventListener('click', lockAnswer);
 
 /* ---------------- 다음 문제로 이동 ---------------- */
 function nextQuestion(){
@@ -480,12 +484,12 @@ function nextQuestion(){
 /* ---------------- 퀴즈 종료 및 결과 처리 ---------------- */
 function finishQuiz(){
   clearInterval(timerInterval);
-  const totalTimeSec = Math.round((Date.now() - quizStartTime) / 1000);
+  const totalSec = totalMs / 1000;
 
   markParticipated();
 
   document.getElementById('resultCorrect').textContent = `${correctCount} / ${TOTAL_QUESTIONS}`;
-  document.getElementById('resultTime').textContent = `${totalTimeSec}초`;
+  document.getElementById('resultTime').textContent = fmtTime(totalSec);
 
   let stamp = '🌟 우주 탐험가 인증 완료!';
   if(correctCount === TOTAL_QUESTIONS) stamp = '🏅 우주 박사 인증 완료!';
@@ -496,7 +500,7 @@ function finishQuiz(){
 
   renderReview();
   showScreen('screen-result');
-  submitResult(totalTimeSec);
+  submitResult(totalMs);
 }
 
 /* ---------------- 오답 노트 렌더링 ---------------- */
@@ -545,9 +549,9 @@ const GET=p=>fetch(SCRIPT_URL+'?'+new URLSearchParams(p)).then(r=>r.json());
 const POST=o=>fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(o)}).then(r=>r.json());
 const $=id=>document.getElementById(id);
 
-function submitResult(totalTimeSec){
+function submitResult(totalMs){
   me={name:userName, phone:userPhone}; lookupMode=false; prizeKey='';
-  POST({action:'submit', name:userName, phone:userPhone, correct:correctCount, time:totalTimeSec})
+  POST({action:'submit', name:userName, phone:userPhone, correct:correctCount, time:Math.round(totalMs/1000), timeMs:Math.round(totalMs)})
     .then(renderStatus).catch(netErr);
 }
 function netErr(e){ $('rankLoading').style.display='block'; $('rankLoading').innerHTML='⚠️ 순위 정보를 불러오지 못했습니다.<br>잠시 후 다시 시도해 주세요.<br><button class="mini-btn" onclick="refresh(true)">🔄 다시 시도</button>'; console.error(e); }
@@ -567,11 +571,11 @@ $('btnLookup').addEventListener('click', () => {
 function renderStatus(d){
   if(d.error){ alert(d.error); if(lookupMode) showScreen('screen-start'); return; }
   $('rankLoading').style.display='none'; $('rankContent').style.display='block';
-  $('resultCorrect').textContent=`${d.correct} / ${TOTAL_QUESTIONS}`; $('resultTime').textContent=`${d.time}초`;
+  $('resultCorrect').textContent=`${d.correct} / ${TOTAL_QUESTIONS}`; $('resultTime').textContent=fmtTime(d.time);
   $('myRank').textContent=`나의 현재 순위: ${d.rank}위 (총 ${d.total}명)`;
   const medals=['🥇','🥈','🥉'], w=$('top3List'); w.innerHTML='';
   (d.top3||[]).forEach((r,i)=>{ const div=document.createElement('div'); div.className='leader-row';
-    div.innerHTML=`<span><span class="medal">${medals[i]}</span>${r.name}</span><span>${r.correct}개 / ${r.time}초</span>`; w.appendChild(div); });
+    div.innerHTML=`<span><span class="medal">${medals[i]}</span>${r.name}</span><span>${r.correct}개 / ${fmtTime(r.time)}</span>`; w.appendChild(div); });
   $('rankNote').innerHTML = d.closed ? '🏁 행사가 종료되어 순위가 확정되었어요.' :
     '※ 다른 참가자가 참여할 때마다 순위가 바뀔 수 있어요.<br>순위는 ①정답 수 ②빠른 시간 ③먼저 참여한 순서로 정해져요.<br>이 화면은 30초마다 자동 갱신돼요. ('+new Date().toLocaleTimeString('ko-KR')+' 기준)';
   renderPrize(d);
@@ -591,7 +595,7 @@ function renderPrize(d){
   else if(st==='claimed') c.innerHTML=head+`<p class="ok">✅ 현재 1위이며 배송 정보가 등록되어 있어요.<br>${d.closed?'🎉 최종 1위 확정! 입력하신 연락처로 안내드릴게요.':'끝까지 1위를 지키면 발송돼요. 1위를 내주면 정보는 자동 삭제돼요.'}</p>
     ${d.closed?'':'<button class="mini-btn" onclick="showForm()">✏️ 정보 다시 입력하기</button><div id="reform"></div>'}`;
   else if(st==='lost') c.innerHTML=head+`<p class="warn">😢 아쉽게도 1위 자리를 다른 참가자에게 내주었어요.<br>입력하신 배송 정보는 <b>자동으로 삭제</b>돼요.</p>`;
-  else c.innerHTML=head+`<p>1위가 되면 이 자리에 <b>배송 정보 입력창</b>이 열려요.${t1?`<br>현재 1위 기록: <b>${t1.correct}개 / ${t1.time}초</b>`:''}</p>
+  else c.innerHTML=head+`<p>1위가 되면 이 자리에 <b>배송 정보 입력창</b>이 열려요.${t1?`<br>현재 1위 기록: <b>${t1.correct}개 / ${fmtTime(t1.time)}</b>`:''}</p>
     <p class="warn">수령 주소·연락처는 1위에게만, 개인정보 동의 후에 받아요.</p>`;
 }
 function showForm(){ $('reform').innerHTML=CLAIM_FORM; }
