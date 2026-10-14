@@ -3,335 +3,386 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#0b0c2a">
+<meta name="theme-color" content="#090C1F">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="format-detection" content="telephone=no">
-<title>🚀 우주 퀴즈 QR 골든벨</title>
+<title>우주 퀴즈 QR 골든벨 | 부천천문과학관</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@700;800&family=Gowun+Dodum&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg1:#0b0c2a;
-    --bg2:#1b1e4b;
-    --accent:#5b8dff;
-    --accent2:#ffcb5b;
-    --danger:#ff5b6e;
-    --ok:#4ce0a1;
-    --card:#ffffff;
-    --text-dark:#1c1c3a;
+    --deep-space:#090C1F;
+    --panel-navy:#131A3D;
+    --panel-navy-2:#1B2350;
+    --starlight:#F5C86B;
+    --aurora:#4FD8C4;
+    --nebula:#8A73D1;
+    --text-main:#ECEDF6;
+    --text-dim:#B7C0E8;
+    --flare:#FF6B81;
+    --leaf:#6BE6A6;
+    --grid-line:rgba(183,192,232,.4);
   }
-  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  *{box-sizing:border-box;-webkit-text-size-adjust:100%;}
   html,body{
-    margin:0; padding:0; height:100%;
-    font-family:"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
-    background:radial-gradient(ellipse at top, var(--bg2), var(--bg1));
-    color:#fff;
-    /* 보안: 텍스트 드래그/선택 방지 */
-    -webkit-user-select:none;
-    -moz-user-select:none;
-    -ms-user-select:none;
-    user-select:none;
+    margin:0;padding:0;height:100%;
+    background:#000;
+    color:var(--text-main);
+    font-family:'Gowun Dodum', sans-serif;
+    overflow:hidden;overscroll-behavior:none;
+    word-break:keep-all;
+    overflow-wrap:break-word;
+    touch-action:manipulation;
+    -webkit-user-select:none;user-select:none;
     -webkit-touch-callout:none;
-    overflow-x:hidden;
   }
-  img, a { -webkit-user-drag:none; user-drag:none; }
-  input{ -webkit-user-select:text; user-select:text; }  /* 입력칸은 선택/붙여넣기 가능 */
-  #app{
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:flex-start;
-    padding:calc(20px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-right,0px)) calc(40px + env(safe-area-inset-bottom,0px)) calc(16px + env(safe-area-inset-left,0px));
-    max-width:480px;
-    margin:0 auto;
+  button{
+    -webkit-touch-callout:none;-webkit-user-drag:none;
+    -webkit-user-select:none;user-select:none;
+    font-family:inherit;
   }
-  .screen{ width:100%; display:none; animation:fadeIn .35s ease; }
-  .screen.active{ display:flex; flex-direction:column; align-items:center; }
-  @keyframes fadeIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
-
-  .stars{ position:fixed; inset:0; z-index:-1; overflow:hidden; }
-  .stars span{
-    position:absolute; width:2px; height:2px; background:#fff; border-radius:50%;
-    opacity:.7; animation: twinkle 3s infinite ease-in-out;
+  img, a{ -webkit-user-drag:none; }
+  input{ -webkit-user-select:text; user-select:text; }
+  #frame-outer{
+    height:100vh;height:100dvh;width:100vw;
+    display:flex;align-items:stretch;justify-content:center;
+    background:#000;
   }
-  @keyframes twinkle{ 0%,100%{opacity:.2;} 50%{opacity:1;} }
-
-  h1{ font-size:1.5rem; text-align:center; margin:10px 0 4px; }
-  .subtitle{ color:#b8bce8; font-size:.9rem; text-align:center; margin-bottom:24px; }
-
-  .card{
-    background:var(--card);
-    color:var(--text-dark);
-    border-radius:24px;
-    padding:28px 22px;
-    width:100%;
-    box-shadow:0 10px 30px rgba(0,0,0,.35);
+  #frame{
+    position:relative;
+    background:var(--deep-space);
+    width:100%;height:100%;
+    overflow:hidden;
   }
-
-  label{ display:block; font-weight:700; margin:14px 0 6px; font-size:.95rem; color:#333; }
-  input[type=text], input[type=tel]{
-    width:100%; padding:16px; font-size:1.1rem; border-radius:14px;
-    border:2px solid #e1e4f5; outline:none; background:#f7f8fd;
+  #starfield{position:absolute;inset:0;z-index:0;display:block;width:100%;height:100%;}
+  #app{position:relative;z-index:1;height:100%;width:100%;}
+  .screen{
+    display:none;
+    position:absolute;inset:0;
+    flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;
+    animation:fadein .4s ease;
+    padding:calc(22px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) calc(16px + env(safe-area-inset-left,0px));
+    overscroll-behavior:contain;
+    /* 내용이 길어지면(순위·배송정보 입력 등) 화면 안에서 스크롤, 짧으면 가운데 정렬 */
+    overflow-y:auto;overflow-x:hidden;touch-action:pan-y;-webkit-overflow-scrolling:touch;
   }
-  input:focus{ border-color:var(--accent); }
+  .screen > *{max-width:100%;}
+  .screen:not(#screen-quiz) > :first-child{margin-top:auto;}
+  .screen:not(#screen-quiz) > :last-child{margin-bottom:auto;}
+  .screen.active{display:flex;}
+  @keyframes fadein{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 
-  .big-btn{
-    width:100%;
-    margin-top:22px;
-    padding:18px;
-    font-size:1.2rem;
-    font-weight:800;
-    border:none;
-    border-radius:18px;
-    background:linear-gradient(135deg,#5b8dff,#7b6bff);
-    color:#fff;
-    box-shadow:0 8px 18px rgba(91,141,255,.45);
-    cursor:pointer;
-    transition:transform .1s ease;
+  .eyebrow{
+    font-family:'Space Grotesk',sans-serif;
+    letter-spacing:.35em;font-size:13px;color:var(--aurora);
+    margin-bottom:16px;font-weight:500;
   }
-  .big-btn:active{ transform:scale(.97); }
-  .big-btn.secondary{ background:linear-gradient(135deg,#4ce0a1,#2bb583); box-shadow:0 8px 18px rgba(76,224,161,.4); }
-  .big-btn.ghost{ background:#fff; color:var(--accent); border:2px solid var(--accent); box-shadow:none; }
+  h1.title{
+    font-family:'Gothic A1', sans-serif;font-weight:800;
+    font-size:clamp(28px,5.5vw,46px);line-height:1.35;margin:0 0 14px;
+  }
+  p.lead{font-size:16.5px;color:var(--text-dim);line-height:1.8;margin:0 0 18px;max-width:520px;}
+  .launch-btn{
+    font-family:'Gothic A1',sans-serif;font-weight:800;font-size:19px;
+    background:var(--starlight);color:#241705;border:none;
+    padding:16px 46px;border-radius:999px;cursor:pointer;
+    letter-spacing:.05em;transition:transform .15s ease;
+  }
+  .launch-btn:active{transform:scale(.96);}
+  .ghost-btn{
+    font-size:15px;background:transparent;color:var(--text-dim);
+    border:1.5px solid rgba(183,192,232,.55);padding:13px 30px;
+    border-radius:999px;cursor:pointer;margin-top:16px;
+    text-decoration:none;display:inline-block;
+  }
+  .ghost-btn:active{border-color:var(--aurora);color:var(--aurora);}
+  .launch-btn:disabled,.rank-btn:disabled{opacity:.45;cursor:not-allowed;}
+  .rank-btn{
+    font-family:'Gothic A1',sans-serif;font-weight:800;font-size:15px;
+    background:linear-gradient(135deg, var(--starlight), #ffb454);
+    color:#241705;border:none;
+    padding:12px 32px;border-radius:999px;cursor:pointer;
+    letter-spacing:.05em;margin-top:16px;transition:transform .15s ease;
+  }
+  .rank-btn:active{transform:scale(.96);}
+  .hub-btn{ font-size:14px; padding:11px 26px; margin-top:12px; }
 
+  /* 화면 상단 뒤로가기 바 */
+  .topbar{width:100%;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;max-width:520px;}
+  .link-back{
+    font-size:15px;color:var(--text-dim);cursor:pointer;letter-spacing:.02em;
+    padding:6px 8px;border-radius:8px;
+  }
+  .link-back:active{color:var(--aurora);background:rgba(79,216,196,.1);}
+
+  /* 입력 */
+  .field-panel{
+    width:100%;max-width:440px;background:var(--panel-navy);
+    border:1px solid rgba(183,192,232,.35);border-radius:16px;
+    padding:16px 20px;margin-bottom:16px;text-align:left;
+  }
+  .field-panel .field-label, .field-label{display:block;font-size:12px;color:var(--text-dim);letter-spacing:.05em;margin-bottom:10px;}
+  input.arcade-input{
+    width:100%;padding:13px 12px;background:var(--deep-space);border:2px solid rgba(183,192,232,.5);
+    color:var(--text-main);font-family:'Gothic A1',sans-serif;font-weight:700;font-size:16px;  /* 16px 미만이면 iOS가 입력 시 화면을 확대함 */
+    border-radius:8px;outline:none;letter-spacing:.02em;
+  }
+  input.arcade-input:focus{border-color:var(--aurora);}
+  .id-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .id-grid .field-label{margin-bottom:6px;}
+  .field-panel.compact{margin-bottom:6px;}
+  .row{display:flex;gap:10px;width:100%;margin-top:14px;}
+  .row .launch-btn, .row .ghost-btn{flex:1;margin-top:0;padding-left:16px;padding-right:16px;text-align:center;}
+
+  .title-note{max-width:440px;font-size:12.5px;line-height:1.7;color:var(--text-dim);margin:14px 0 0;}
+  .title-note b{color:var(--starlight);}
+  .credit{font-family:'Gothic A1',sans-serif;font-weight:600;font-size:clamp(10px,1.6vw,12px);color:var(--text-dim);line-height:1.6;margin-top:12px;}
   .notice-box{
-    background:#fff3f3; color:#b23b3b; border:2px solid #ffcccc;
-    padding:16px; border-radius:16px; text-align:center; font-weight:700; margin-top:14px;
+    display:none;max-width:440px;margin-top:12px;padding:12px 16px;border-radius:12px;
+    border:1px solid var(--flare);background:rgba(255,107,129,.1);color:var(--flare);font-weight:700;font-size:14px;line-height:1.6;
   }
 
   /* 퀴즈 화면 */
-  .quiz-top{ width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:.95rem; color:#dfe2ff; }
-  .timer-wrap{ width:100%; height:14px; background:#2a2d5c; border-radius:10px; overflow:hidden; margin-bottom:18px; }
-  .timer-bar{ height:100%; width:100%; background:linear-gradient(90deg,var(--ok),var(--accent2),var(--danger)); border-radius:10px; transition:width .1s linear; }
-
+  #screen-quiz{ padding-top:calc(30px + env(safe-area-inset-top,0px)); }
+  .quiz-top{ width:100%;max-width:520px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px; }
+  .quiz-top span{ font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;letter-spacing:.2em;color:var(--text-dim); }
+  .timer-wrap{ width:100%;max-width:520px;height:12px;background:var(--panel-navy);border:1px solid rgba(183,192,232,.35);border-radius:999px;overflow:hidden;margin-bottom:18px; }
+  .timer-bar{ height:100%;width:100%;background:linear-gradient(90deg,var(--aurora),var(--starlight),var(--flare));border-radius:999px;transition:width .1s linear; }
   .question-card{
-    background:var(--card); color:var(--text-dark); border-radius:22px; padding:26px 20px;
-    width:100%; text-align:center; box-shadow:0 10px 26px rgba(0,0,0,.3); margin-bottom:20px;
+    width:100%;max-width:520px;background:var(--panel-navy);border:1px solid rgba(183,192,232,.35);
+    border-radius:16px;padding:22px 20px;margin-bottom:16px;text-align:center;
   }
-  .q-number{ font-size:.85rem; color:#7b7fb3; font-weight:700; margin-bottom:8px; }
-  .q-text{ font-size:1.25rem; font-weight:800; line-height:1.4; }
-
-  .options{ width:100%; display:flex; flex-direction:column; gap:14px; }
+  .q-number{ font-family:'Space Grotesk',sans-serif;font-size:12px;letter-spacing:.3em;color:var(--aurora);font-weight:700;margin-bottom:10px; }
+  .q-text{ font-family:'Gothic A1',sans-serif;font-weight:800;font-size:clamp(18px,4.4vw,22px);line-height:1.5;color:var(--text-main); }
+  .options{ width:100%;max-width:520px;display:flex;flex-direction:column;gap:12px; }
   .option-btn{
-    width:100%; padding:20px 16px; font-size:1.1rem; font-weight:700;
-    border:none; border-radius:18px; background:#fff; color:var(--text-dark);
-    box-shadow:0 6px 14px rgba(0,0,0,.25); cursor:pointer; text-align:left;
-    display:flex; align-items:center; gap:12px; transition:transform .1s ease, background .2s;
+    width:100%;padding:15px 16px;font-size:16px;font-weight:700;
+    background:var(--panel-navy);color:var(--text-main);
+    border:1.5px solid rgba(183,192,232,.45);border-radius:14px;
+    cursor:pointer;text-align:left;line-height:1.45;
+    display:flex;align-items:center;gap:12px;transition:transform .1s ease, border-color .15s, background .15s;
   }
-  .option-btn:active{ transform:scale(.97); }
+  .option-btn:active{transform:scale(.98);}
   .option-btn .badge{
-    width:32px; height:32px; border-radius:50%; background:var(--accent); color:#fff;
-    display:flex; align-items:center; justify-content:center; font-size:.95rem; flex-shrink:0;
+    width:28px;height:28px;border-radius:50%;flex-shrink:0;
+    border:1px solid var(--aurora);color:var(--aurora);
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;
+    display:flex;align-items:center;justify-content:center;
   }
-  .option-btn.correct{ background:var(--ok); color:#fff; }
-  .option-btn.correct .badge{ background:#fff; color:var(--ok); }
-  .option-btn.wrong{ background:var(--danger); color:#fff; }
-  .option-btn.wrong .badge{ background:#fff; color:var(--danger); }
-  .option-btn.disabled{ pointer-events:none; opacity:.85; }
-  .option-btn.selected{ background:#eef1ff; outline:3px solid var(--accent); }
-  .big-btn:disabled{ opacity:.4; box-shadow:none; cursor:not-allowed; }
-  .big-btn:disabled:active{ transform:none; }
+  .option-btn.disabled{ pointer-events:none;opacity:.85; }
+  .option-btn.selected{ background:var(--panel-navy-2);border-color:var(--aurora);box-shadow:0 0 0 2px rgba(79,216,196,.35); }
+  .option-btn.selected .badge{ background:var(--aurora);color:#06241f; }
+  #btnNext{ margin-top:22px;width:100%;max-width:520px; }
 
   /* 결과 화면 */
-  .result-summary{
-    background:var(--card); color:var(--text-dark); border-radius:24px; padding:28px 22px;
-    width:100%; text-align:center; box-shadow:0 10px 28px rgba(0,0,0,.35);
-  }
-  .stamp{
-    display:inline-block; border:4px solid var(--danger); color:var(--danger);
-    font-weight:900; padding:10px 18px; border-radius:14px; font-size:1.1rem;
-    transform:rotate(-6deg); margin:14px 0; letter-spacing:1px;
-  }
-  .score-row{ display:flex; justify-content:space-around; margin:18px 0; }
-  .score-box{ flex:1; }
-  .score-box .num{ font-size:1.8rem; font-weight:900; color:var(--accent); }
-  .score-box .label{ font-size:.85rem; color:#888; margin-top:4px; }
-
-  .rank-card{
-    background:var(--card); color:var(--text-dark); border-radius:22px; padding:22px;
-    width:100%; margin-top:16px; box-shadow:0 10px 24px rgba(0,0,0,.3);
-  }
-  .rank-title{ font-weight:800; font-size:1.05rem; margin-bottom:12px; text-align:center; }
-  .my-rank{
-    background:#eef1ff; border-radius:14px; padding:14px; text-align:center; font-weight:800;
-    color:var(--accent); margin-bottom:14px; font-size:1.05rem;
-  }
-  .leader-row{
-    display:flex; align-items:center; justify-content:space-between; padding:10px 6px;
-    border-bottom:1px solid #eee; font-weight:700;
-  }
-  .leader-row:last-child{ border-bottom:none; }
-  .medal{ font-size:1.2rem; margin-right:8px; }
-
-  .review-toggle{
-    width:100%; margin-top:16px; padding:16px; border-radius:16px; border:2px dashed var(--accent);
-    background:transparent; color:#eef1ff; font-weight:700; cursor:pointer; font-size:1rem;
-  }
-  .review-list{ width:100%; margin-top:14px; display:none; flex-direction:column; gap:12px; }
+  .result-title{font-family:'Space Grotesk',sans-serif;font-size:13px;letter-spacing:.3em;color:var(--text-dim);margin-bottom:10px;}
+  #stampText{font-family:'Gothic A1',sans-serif;font-weight:800;font-size:clamp(22px,4vw,30px);color:var(--starlight);margin:0 0 20px;}
+  #resultHeading{font-family:'Gothic A1',sans-serif;font-weight:800;font-size:clamp(16px,3vw,20px);margin:0 0 6px;}
+  #stat-row{display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+  .stat-card{background:var(--panel-navy);border:1px solid rgba(183,192,232,.35);border-radius:14px;padding:14px 20px;min-width:96px;}
+  .stat-num{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;color:var(--text-main);}
+  .stat-lbl{font-size:11px;color:var(--text-dim);letter-spacing:.1em;margin-top:2px;}
+  .result-btn-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+  #btnReview{ margin-top:0;margin-bottom:12px; }
+  .review-list{ width:100%;max-width:440px;margin-bottom:14px;display:none;flex-direction:column;gap:10px; }
   .review-list.open{ display:flex; }
   .review-item{
-    background:var(--card); color:var(--text-dark); border-radius:16px; padding:16px; text-align:left;
+    background:var(--panel-navy);border:1px solid rgba(183,192,232,.35);border-radius:14px;padding:14px 16px;text-align:left;
   }
-  .review-item .rq{ font-weight:800; margin-bottom:8px; }
-  .review-item .ra{ color:var(--ok); font-weight:700; margin-bottom:4px; }
-  .review-item .rx{ color:var(--danger); font-weight:700; margin-bottom:6px; }
-  .review-item .re{ color:#555; font-size:.9rem; line-height:1.4; }
+  .review-item .rq{ font-family:'Gothic A1',sans-serif;font-weight:800;font-size:14.5px;margin-bottom:8px;line-height:1.5; }
+  .review-item .ra{ color:var(--leaf);font-weight:700;font-size:13.5px;margin-bottom:4px; }
+  .review-item .rx{ color:var(--flare);font-weight:700;font-size:13.5px;margin-bottom:6px; }
+  .review-item .re{ color:var(--text-dim);font-size:13px;line-height:1.65; }
 
-  .prize{width:100%;margin-top:16px;border-radius:20px;padding:20px;background:#fff;color:var(--text-dark);text-align:left;font-size:.92rem;line-height:1.5}
-  .prize h3{margin:0 0 8px;font-size:1.15rem}
-  .prize .warn{background:#fff4d6;border-radius:12px;padding:10px 12px;font-size:.84rem}
-  .prize .ok{background:#e3fff3;border-radius:12px;padding:10px 12px}
-  .prize input[type=text],.prize input[type=tel]{width:100%;margin:4px 0 10px;padding:12px;border:2px solid #d5d9f5;border-radius:12px;font-size:1rem}
-  .prize label.chk{display:flex;gap:8px;align-items:flex-start;margin:8px 0;font-size:.85rem;font-weight:700}
-  .prize details{font-size:.8rem;color:#444;background:#f3f4fb;border-radius:10px;padding:8px 10px;margin:6px 0}
-  .mini-btn{margin-top:10px;padding:10px 14px;border-radius:12px;border:none;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
-  .rank-card .loading,.result-summary .loading{ color:#555a80; }
-  .result-summary .review-toggle{ color:var(--accent); }
-  .loading{ text-align:center; color:#cfd2ff; margin-top:16px; font-size:.9rem; }
-  .footer-note{ margin-top:26px; font-size:.75rem; color:#7d81ad; text-align:center; line-height:1.6; }
-  input[type=text],input[type=tel]{ font-size:16px; }  /* 16px 미만이면 iOS가 입력 시 화면을 확대함 */
-  .big-btn:disabled,.mini-btn:disabled{ opacity:.45; cursor:not-allowed; }
-  .mini-btn:active{ opacity:.8; }
-  .topbar{ width:100%; display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
-  .link-back{ font-size:.95rem; color:#b8bce8; cursor:pointer; padding:6px 8px; border-radius:8px; }
-  .link-back:active{ color:var(--ok); background:rgba(76,224,161,.1); }
-  .leader-meta{ font-size:.82rem; color:#555a80; text-align:right; }
-  .my-rank small{ display:block; margin-top:4px; font-weight:600; font-size:.78rem; color:#555a80; }
-  .notice-box.closed{ display:none; }
+  .rank-card{width:100%;max-width:440px;background:var(--panel-navy);border:1px solid rgba(183,192,232,.35);border-radius:16px;padding:16px 18px;margin-bottom:14px;text-align:left;}
+  .rank-title{font-family:'Gothic A1',sans-serif;font-weight:800;font-size:15px;text-align:center;margin-bottom:12px;}
+  .my-rank{background:rgba(79,216,196,.1);border:1px solid rgba(79,216,196,.4);border-radius:12px;padding:12px;text-align:center;font-family:'Gothic A1',sans-serif;font-weight:800;color:var(--aurora);font-size:15px;margin-bottom:10px;}
+  .my-rank small{display:block;margin-top:4px;font-weight:600;font-size:12px;color:var(--text-dim);}
+  .leader-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 4px;border-bottom:1px solid rgba(183,192,232,.2);font-weight:700;font-size:14px;}
+  .leader-row:last-child{border-bottom:none;}
+  .leader-meta{font-size:12px;font-weight:600;color:var(--text-dim);text-align:right;line-height:1.5;}
+  .medal{font-size:18px;margin-right:6px;}
+  .loading{text-align:center;color:var(--text-dim);font-size:13px;line-height:1.7;margin-top:10px;}
+  .mini-btn{margin-top:12px;padding:10px 16px;border-radius:999px;border:1.5px solid var(--aurora);background:transparent;color:var(--aurora);font-family:'Gothic A1',sans-serif;font-weight:800;font-size:13px;cursor:pointer;}
+  .mini-btn:active{background:rgba(79,216,196,.15);}
+  .mini-btn:disabled{opacity:.45;cursor:not-allowed;}
+
+  .prize{width:100%;max-width:440px;margin-bottom:14px;border-radius:16px;padding:16px 18px;background:var(--panel-navy-2);border:1px solid rgba(245,200,107,.45);text-align:left;font-size:13.5px;line-height:1.65;}
+  .prize h3{margin:0 0 8px;font-family:'Gothic A1',sans-serif;font-weight:800;font-size:16px;color:var(--starlight);}
+  .prize p{margin:8px 0;}
+  .prize .warn{background:rgba(245,200,107,.12);border:1px solid rgba(245,200,107,.4);border-radius:10px;padding:10px 12px;font-size:12.5px;}
+  .prize .ok{background:rgba(107,230,166,.12);border:1px solid rgba(107,230,166,.45);border-radius:10px;padding:10px 12px;}
+  .prize .pf label{display:block;font-size:12.5px;color:var(--text-dim);margin:10px 0 4px;}
+  .prize .pf label.chk{display:flex;gap:8px;align-items:flex-start;margin:10px 0;color:var(--text-main);font-weight:700;font-size:12.5px;}
+  .prize .pf label.chk input{margin-top:3px;flex-shrink:0;width:18px;height:18px;}
+  .prize details{font-size:12px;color:var(--text-dim);background:rgba(9,12,31,.5);border-radius:10px;padding:8px 10px;margin:10px 0;line-height:1.7;}
+  .prize details summary{cursor:pointer;color:var(--text-main);}
+  .prize .pf .launch-btn{width:100%;margin-top:8px;padding:13px;font-size:15px;}
+  .closed-claim-note{background:rgba(183,192,232,.1);border:1px solid rgba(183,192,232,.35);border-radius:10px;padding:10px 12px;font-size:12.5px;color:var(--text-dim);}
+
+  /* 운영 종료 시 화면 전체를 덮는 안내 */
   #closedOverlay{
-    display:none; position:fixed; inset:0; z-index:100;
-    flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:14px;
-    padding:24px; background:rgba(5,8,25,.97); color:#ecedf6;
+    display:none;position:absolute;inset:0;z-index:100;
+    flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;
+    padding:24px;background:rgba(5,8,25,.97);color:var(--text-main);
   }
-  #closedOverlay.show{ display:flex; }
-  #closedOverlay .co-icon{ font-size:56px; }
-  #closedOverlay .co-title{ font-weight:800; font-size:clamp(22px,5vw,30px); }
-  #closedOverlay .co-desc{ font-size:15px; line-height:1.7; opacity:.85; max-width:420px; }
-  #sound-toggle{
-    position:fixed; bottom:calc(12px + env(safe-area-inset-bottom,0px)); right:calc(12px + env(safe-area-inset-right,0px)); z-index:20;
-    width:40px; height:40px; border-radius:50%; background:rgba(19,26,61,.85);
-    border:1.5px solid rgba(183,192,232,.5); color:#fff; font-size:18px; cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-  }
-  #sound-toggle.muted{ opacity:.5; }
-  body.vk-open #app{ padding-bottom:calc(var(--vk,0px) + 24px); }
+  #closedOverlay.show{display:flex;}
+  #closedOverlay .co-icon{font-size:56px;}
+  #closedOverlay .co-title{font-family:'Gothic A1',sans-serif;font-weight:800;font-size:clamp(22px,5vw,30px);}
+  #closedOverlay .co-desc{font-size:15px;line-height:1.7;opacity:.85;max-width:420px;}
+  #closedOverlay .ghost-btn{margin-top:0;}
+
   /* 내 순위 확인 전용 입력창(모달) */
   #lookupModal{
-    display:none; position:fixed; inset:0; z-index:90;
-    align-items:center; justify-content:center; padding:20px;
-    background:rgba(5,8,25,.85);
+    display:none;position:absolute;inset:0;z-index:90;
+    align-items:center;justify-content:center;padding:20px;
+    background:rgba(5,8,25,.88);
   }
-  #lookupModal.show{ display:flex; }
+  #lookupModal.show{display:flex;}
   #lookupModal .modal-card{
-    background:var(--card); color:var(--text-dark); border-radius:24px; padding:26px 22px;
-    width:100%; max-width:420px; box-shadow:0 10px 30px rgba(0,0,0,.5);
+    width:100%;max-width:400px;background:var(--panel-navy);
+    border:1px solid rgba(183,192,232,.4);border-radius:18px;padding:22px 20px;text-align:left;
   }
-  #lookupModal .modal-title{ font-size:1.2rem; font-weight:800; text-align:center; margin-bottom:4px; }
-  #lookupModal .modal-desc{ font-size:.85rem; color:#666; text-align:center; line-height:1.5; margin-bottom:6px; }
-  #lookupModal .modal-btns{ display:flex; gap:10px; margin-top:6px; }
-  #lookupModal .modal-btns .big-btn{ margin-top:16px; padding:15px; font-size:1.05rem; }
-  .closed-claim-note{ background:#f1f1f6; border-radius:12px; padding:10px 12px; font-size:.85rem; color:#555; }
+  #lookupModal .modal-title{font-family:'Gothic A1',sans-serif;font-weight:800;font-size:18px;text-align:center;margin-bottom:6px;}
+  #lookupModal .modal-desc{font-size:13px;color:var(--text-dim);text-align:center;line-height:1.6;margin-bottom:14px;}
+  #lookupModal .field-label{display:block;font-size:12px;color:var(--text-dim);margin:10px 0 6px;}
+  #lookupModal .row{margin-top:18px;}
+
+  #sound-toggle{
+    position:absolute;bottom:calc(12px + env(safe-area-inset-bottom,0px));right:calc(12px + env(safe-area-inset-right,0px));z-index:20;
+    width:40px;height:40px;border-radius:50%;
+    background:rgba(19,26,61,.85);border:1.5px solid rgba(183,192,232,.5);
+    color:var(--text-main);font-size:18px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  #sound-toggle.muted{opacity:.5;}
+
+  @media (max-width:360px){ .id-grid{grid-template-columns:1fr;} }
+  @media (max-width:480px){
+    p.lead{font-size:15px;}
+    .stat-card{min-width:0;flex:1 1 90px;padding:12px 10px;}
+    #stat-row{width:100%;max-width:440px;}
+  }
+  @media (min-width:768px){
+    p.lead{font-size:18px;}
+    .field-panel,.rank-card,.prize{max-width:520px;}
+  }
+  /* 휴대폰 기본 키보드가 올라오면 입력칸이 가려지지 않도록 아래 여백 확보 (visualViewport 기반) */
+  body.vk-open .screen{padding-bottom:calc(var(--vk,0px) + 24px);}
 </style>
 </head>
 <body oncontextmenu="return false;">
+<div id="frame-outer">
+  <div id="frame">
+    <canvas id="starfield"></canvas>
+    <div id="app">
 
-<div class="stars" id="stars"></div>
-
-<div id="app">
-
-  <!-- ================= 시작 화면 ================= -->
-  <div class="screen active" id="screen-start">
-    <h1>🚀 우주 퀴즈 QR 골든벨</h1>
-    <p class="subtitle">이름과 전화번호 뒷 4자리를 입력하고<br>우주 탐험을 시작해보세요!</p>
-    <div class="card">
-      <label for="inputName">이름</label>
-      <input type="text" id="inputName" placeholder="예) 김민준" maxlength="10" autocomplete="name" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next">
-      <label for="inputPhone">휴대폰 번호 뒷 4자리</label>
-      <input type="tel" id="inputPhone" placeholder="예) 1234" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="go">
-      <button class="big-btn" id="btnStart">🌟 퀴즈 시작하기</button>
-      <div class="notice-box closed" id="closedNotice">🏁 운영이 종료되었어요.<br>참여해 주셔서 감사합니다. 아래에서 최종 순위를 확인할 수 있어요.</div>
-      <div class="notice-box" id="blockNotice" style="display:none;">
-        😊 이미 참여하셨습니다!<br>참여해 주셔서 감사합니다.
-      </div>
-    </div>
-    <button class="review-toggle" id="btnLookup">📊 내 순위 다시 확인하기</button>
-    <p class="footer-note" id="titleNote"></p>
-  </div>
-
-  <!-- ================= 퀴즈 화면 ================= -->
-  <div class="screen" id="screen-quiz">
-    <div class="quiz-top">
-      <span id="qProgress">문제 1 / 15</span>
-    </div>
-    <div class="timer-wrap"><div class="timer-bar" id="timerBar"></div></div>
-    <div class="question-card">
-      <div class="q-number" id="qNumber">Q1</div>
-      <div class="q-text" id="qText">문제 내용</div>
-    </div>
-    <div class="options" id="optionsWrap"></div>
-    <button class="big-btn" id="btnNext" disabled>다음 ▶</button>
-  </div>
-
-  <!-- ================= 결과 화면 ================= -->
-  <div class="screen" id="screen-result">
-    <div class="topbar"><span class="link-back" id="back-from-result">← 처음으로</span></div>
-    <h1 id="resultHeading">🎉 미션 결과</h1>
-    <div class="result-summary">
-      <div class="stamp" id="stampText">미션 완료!</div>
-      <div class="score-row">
-        <div class="score-box">
-          <div class="num" id="resultCorrect">0 / 15</div>
-          <div class="label">맞춘 개수</div>
+      <!-- ================= 시작 화면 ================= -->
+      <div class="screen active" id="screen-start">
+        <div class="eyebrow">SPACE QUIZ · QR 골든벨</div>
+        <h1 class="title">우주 퀴즈 QR 골든벨</h1>
+        <p class="lead">이름과 전화번호 뒷 4자리를 입력하고<br>우주 탐험을 시작해보세요!</p>
+        <div class="field-panel compact">
+          <div class="id-grid">
+            <div>
+              <label class="field-label" for="inputName">이름</label>
+              <input class="arcade-input" type="text" id="inputName" placeholder="예) 김민준" maxlength="10" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next">
+            </div>
+            <div>
+              <label class="field-label" for="inputPhone">휴대폰 번호 뒷 4자리</label>
+              <input class="arcade-input" type="tel" id="inputPhone" placeholder="예) 1234" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="go">
+            </div>
+          </div>
         </div>
-        <div class="score-box">
-          <div class="num" id="resultTime">0초</div>
-          <div class="label">총 소요시간</div>
+        <button class="launch-btn" id="btnStart" style="margin-top:10px;">퀴즈 시작하기</button>
+        <div class="notice-box" id="closedNotice">🏁 운영이 종료되었어요.<br>참여해 주셔서 감사합니다. 아래에서 최종 순위를 확인할 수 있어요.</div>
+        <div class="notice-box" id="blockNotice">😊 이미 참여하셨습니다!<br>참여해 주셔서 감사합니다.</div>
+        <button class="rank-btn" id="btnLookup">🏆 내 순위 다시 확인하기</button>
+        <a class="ghost-btn hub-btn" id="btnHubStart" href="https://dsvit100.github.io/game_hub/">🏠 허브로 돌아가기</a>
+        <p class="title-note" id="titleNote"></p>
+        <div class="credit">
+          © 부천천문과학관. All rights reserved.
         </div>
       </div>
-      <button class="review-toggle" id="btnReview">📖 틀린 문제 해설 보기</button>
+
+      <!-- ================= 퀴즈 화면 ================= -->
+      <div class="screen" id="screen-quiz">
+        <div class="quiz-top">
+          <span id="qProgress">문제 1 / 15</span>
+        </div>
+        <div class="timer-wrap"><div class="timer-bar" id="timerBar"></div></div>
+        <div class="question-card">
+          <div class="q-number" id="qNumber">Q1</div>
+          <div class="q-text" id="qText">문제 내용</div>
+        </div>
+        <div class="options" id="optionsWrap"></div>
+        <button class="launch-btn" id="btnNext" disabled>다음 ▶</button>
+      </div>
+
+      <!-- ================= 결과 화면 ================= -->
+      <div class="screen" id="screen-result">
+        <div class="topbar"><span class="link-back" id="back-from-result">← 처음으로</span></div>
+        <div class="result-title">RESULT</div>
+        <div id="resultHeading">🎉 미션 결과</div>
+        <div id="stampText">미션 완료!</div>
+        <div id="stat-row">
+          <div class="stat-card"><div class="stat-num" id="resultCorrect">0 / 15</div><div class="stat-lbl">맞춘 개수</div></div>
+          <div class="stat-card"><div class="stat-num" id="resultTime">0초</div><div class="stat-lbl">총 소요시간</div></div>
+        </div>
+        <button class="ghost-btn" id="btnReview">📖 틀린 문제 해설 보기</button>
+        <div class="review-list" id="reviewList"></div>
+
+        <div class="rank-card">
+          <div class="rank-title">🏆 실시간 랭킹</div>
+          <div class="loading" id="rankLoading">순위를 불러오는 중...</div>
+          <div id="rankContent" style="display:none;">
+            <div class="my-rank" id="myRank">나의 순위: -</div>
+            <div id="top3List"></div>
+            <div class="loading" id="rankNote"></div>
+            <div style="text-align:center;"><button class="mini-btn" onclick="refresh(true)">🔄 지금 새로고침</button></div>
+          </div>
+        </div>
+        <div class="prize" id="prizeCard" style="display:none"></div>
+
+        <div class="result-btn-row">
+          <a class="ghost-btn hub-btn" id="btnHubResult" href="https://dsvit100.github.io/game_hub/">🏠 허브로 돌아가기</a>
+        </div>
+        <div class="credit">
+          우주과학관 우주 퀴즈 QR 골든벨에 참여해 주셔서 감사합니다 🌌<br>
+          © 부천천문과학관. All rights reserved.
+        </div>
+      </div>
+
     </div>
 
-    <div class="review-list" id="reviewList"></div>
-
-    <div class="rank-card">
-      <div class="rank-title">🏆 실시간 랭킹</div>
-      <div class="loading" id="rankLoading">순위를 불러오는 중...</div>
-      <div id="rankContent" style="display:none;">
-        <div class="my-rank" id="myRank">나의 순위: -</div>
-        <div id="top3List"></div>
-        <div class="loading" id="rankNote"></div>
-        <div style="text-align:center;"><button class="mini-btn" onclick="refresh(true)">🔄 지금 새로고침</button></div>
+    <!-- 내 순위 확인 전용 입력창 -->
+    <div id="lookupModal">
+      <div class="modal-card">
+        <div class="modal-title">📊 내 순위 확인</div>
+        <div class="modal-desc">참여할 때 입력한 이름과<br>휴대폰 번호 뒷 4자리를 입력해 주세요.</div>
+        <label class="field-label" for="lookupName">이름</label>
+        <input class="arcade-input" type="text" id="lookupName" placeholder="예) 김민준" maxlength="10" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next">
+        <label class="field-label" for="lookupPhone">휴대폰 번호 뒷 4자리</label>
+        <input class="arcade-input" type="tel" id="lookupPhone" placeholder="예) 1234" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="go">
+        <div class="row">
+          <button class="ghost-btn" id="btnLookupCancel">취소</button>
+          <button class="launch-btn" id="btnLookupGo">확인</button>
+        </div>
       </div>
     </div>
-    <div class="prize" id="prizeCard" style="display:none"></div>
 
-    <p class="footer-note">우주과학관 우주 퀴즈 QR 골든벨에 참여해 주셔서 감사합니다 🌌</p>
-  </div>
-
-</div>
-
-<!-- 내 순위 확인 전용 입력창 -->
-<div id="lookupModal">
-  <div class="modal-card">
-    <div class="modal-title">📊 내 순위 확인</div>
-    <div class="modal-desc">참여할 때 입력한 이름과<br>휴대폰 번호 뒷 4자리를 입력해 주세요.</div>
-    <label for="lookupName">이름</label>
-    <input type="text" id="lookupName" placeholder="예) 김민준" maxlength="10" autocomplete="name" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next">
-    <label for="lookupPhone">휴대폰 번호 뒷 4자리</label>
-    <input type="tel" id="lookupPhone" placeholder="예) 1234" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="go">
-    <div class="modal-btns">
-      <button class="big-btn ghost" id="btnLookupCancel">취소</button>
-      <button class="big-btn" id="btnLookupGo">확인</button>
+    <div id="closedOverlay">
+      <div class="co-icon">🏁</div>
+      <div class="co-title">운영이 종료되었습니다</div>
+      <div class="co-desc">정해진 운영 시간이 지나 이 페이지는 더 이상 이용할 수 없어요.<br>참여해 주셔서 감사합니다. (© 부천천문과학관)</div>
+      <button class="launch-btn" id="btn-closed-rank" style="display:none;">🏆 최종 순위 확인하기</button>
+      <a class="ghost-btn" id="btnHubClosed" href="https://dsvit100.github.io/game_hub/">🏠 허브로 돌아가기</a>
     </div>
+    <button id="sound-toggle" aria-label="소리 켜기/끄기">🔊</button>
   </div>
 </div>
-
-<div id="closedOverlay">
-  <div class="co-icon">🏁</div>
-  <div class="co-title">운영이 종료되었습니다</div>
-  <div class="co-desc">정해진 운영 시간이 지나 이 페이지는 더 이상 이용할 수 없어요.<br>참여해 주셔서 감사합니다. (© 부천천문과학관)</div>
-  <button class="big-btn" id="btn-closed-rank" style="display:none;max-width:320px;">🏆 최종 순위 확인하기</button>
-</div>
-<button id="sound-toggle" aria-label="소리 켜기/끄기">🔊</button>
 
 <script>
 /* =========================================================
@@ -339,7 +390,7 @@
    ========================================================= */
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwnMqcC1oWTyt2fe2r9uuJ9Ic-rQTD-DH2Be4b8--wadMy9bzUnuqgCtwMgKS6s3qbvIw/exec";
 const PRIZE_NAME = '우주 관련 도서';      // 1위 상품명
-const REMEMBER_IDENTITY = true;          // true: 개인 폰에서 이름/번호를 기억해 다음 접속 때 자동 입력 (공용 기기면 false)
+const REMEMBER_IDENTITY = false;         // false: 이름/번호를 저장·자동입력하지 않음 (true 로 바꾸면 다음 접속 때 자동 입력)
 /* 운영 종료 후에도 '최종 순위 확인' 버튼을 보여줄지 (순위 조회만 가능, 종료 후에는 배송정보 입력·수정 불가) */
 const ALLOW_RANK_LOOKUP_AFTER_CLOSE = true;
 const CLOSE_TEXT = '2026년 10월 17일 오후 9시 30분';   // 안내 문구에 표시되는 운영 종료 시각 (실제 종료는 서버 close_at 기준)
@@ -356,18 +407,29 @@ document.addEventListener('dragstart', e => e.preventDefault());
 document.addEventListener('copy', e => e.preventDefault());
 document.addEventListener('contextmenu', e => e.preventDefault());
 
-/* ---------------- 배경 별 생성 ---------------- */
-(function makeStars(){
-  const wrap = document.getElementById('stars');
-  const count = 60;
-  for(let i=0;i<count;i++){
-    const s = document.createElement('span');
-    s.style.left = Math.random()*100 + '%';
-    s.style.top = Math.random()*100 + '%';
-    s.style.animationDelay = (Math.random()*3) + 's';
-    s.style.width = s.style.height = (Math.random()*2+1) + 'px';
-    wrap.appendChild(s);
+/* ---------------- 배경 별밭 (game6_planet과 동일) ---------------- */
+(function(){
+  const canvas = document.getElementById('starfield');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+  function resizeCanvas(){
+    const rect = document.getElementById('frame').getBoundingClientRect();
+    canvas.width = rect.width; canvas.height = rect.height;
+    stars = Array.from({length:110}, () => ({ x:Math.random()*canvas.width, y:Math.random()*canvas.height, r:Math.random()*1.4+0.3, tw:Math.random()*Math.PI*2 }));
   }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+  function drawStars(t){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#ECEDF6';
+    stars.forEach(s => {
+      ctx.globalAlpha = 0.35 + 0.5*Math.abs(Math.sin(t/1400 + s.tw));
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(drawStars);
+  }
+  requestAnimationFrame(drawStars);
 })();
 
 /* ---------------- 퀴즈 데이터 (15문제, 우주 상식) ---------------- */
@@ -378,15 +440,15 @@ const QUIZ_BANK = [
   { q:"'빨간 행성'이라고 불리는 행성은?", options:["금성","화성","천왕성"], answer:"화성", explain:"화성의 흙에는 철이 녹슨 가루(산화철)가 많아서 붉게 보여요." },
   { q:"지구와 태양계가 속해 있는 은하의 이름은 무엇일까요?", options:["안드로메다 은하","우리은하(은하수)","소마젤란은하"], answer:"우리은하(은하수)", explain:"은하는 별이 아주 많이 모인 커다란 무리예요. 태양계는 우리은하 안에 있고, 밤하늘의 은하수는 우리은하를 안쪽에서 본 모습이에요." },
   { q:"사람이 처음으로 달에 내린 우주선의 이름은?", options:["아폴로 11호","보이저 1호","스푸트니크 1호"], answer:"아폴로 11호", explain:"1969년 아폴로 11호의 우주비행사들이 사람 최초로 달 위를 걸었어요. 보이저 1호는 먼 우주로 간 탐사선, 스푸트니크 1호는 최초의 인공위성이에요." },
-  { q:"별이 반짝반짝 깜빡여 보이는 이유는 무엇 때문일까요?", options:["별이 움직여서","지구를 둘러싼 공기 때문에","별이 회전해서"], answer:"지구를 둘러싼 공기 때문에", explain:"별빛이 지구를 둘러싼 공기를 지날 때 공기가 흔들려서 빛이 이리저리 휘어요. 그래서 별이 반짝여 보여요." },
+  { q:"별이 반짝반짝 깜빡여 보이는 이유는 무엇 때문일까요?", options:["별이 움직여서","지구의 공기 때문에","별이 회전해서"], answer:"지구의 공기 때문에", explain:"별빛이 지구를 둘러싼 공기를 지날 때 공기가 흔들려서 빛이 이리저리 휘어요. 그래서 별이 반짝여 보여요." },
   { q:"태양계에서 가장 넓고 뚜렷한 고리를 가진 행성은?", options:["토성","해왕성","지구"], answer:"토성", explain:"토성의 고리는 얼음 알갱이와 돌가루로 이루어졌고, 태양계에서 가장 넓고 뚜렷해요. 폭은 아주 넓지만 두께는 보통 10 m쯤으로 얇아요." },
   { q:"우주비행사가 우주에서 입는 옷을 무엇이라고 할까요?", options:["우주복","방한복","잠수복"], answer:"우주복", explain:"우주에는 숨 쉴 공기가 없고, 아주 뜨겁거나 아주 추워요. 우주복은 숨 쉴 공기를 채워 주고 몸을 지켜 줘요." },
   { q:"태양계에서 가장 작은 행성은?", options:["수성","화성","명왕성"], answer:"수성", explain:"수성은 태양계 8개 행성 중 가장 작아요. 명왕성은 수성보다 더 작은 '왜소행성'이라 행성에 들지 않아요." },
-  { q:"블랙홀에 대한 설명으로 알맞은 것은?", options:["빛도 빠져나오지 못할 만큼 끌어당기는 힘이 센 곳","아주 밝게 빛나는 별","작은 소행성"], answer:"빛도 빠져나오지 못할 만큼 끌어당기는 힘이 센 곳", explain:"블랙홀은 물질이 좁은 곳에 꽉 뭉쳐서 끌어당기는 힘(중력)이 엄청나게 센 곳이에요. 빛도 빠져나오지 못해서 직접 볼 수 없어요." },
-  { q:"별똥별(유성)의 정체는 무엇일까요?", options:["별이 떨어지는 것","우주의 작은 돌·먼지가 공기 속에서 빛나는 것","하늘에서 번개가 치는 것"], answer:"우주의 작은 돌·먼지가 공기 속에서 빛나는 것", explain:"별똥별은 진짜 별이 아니에요. 우주의 작은 돌 조각이 공기 속으로 아주 빠르게 들어오며 뜨거워져 빛나는 거예요." },
+  { q:"빛도 빠져나오지 못할 만큼 중력이 아주 센 천체는?", options:["블랙홀","혜성","소행성"], answer:"블랙홀", explain:"블랙홀은 물질이 좁은 곳에 꽉 뭉쳐서 끌어당기는 힘(중력)이 엄청나게 센 곳이에요. 빛도 빠져나오지 못해서 직접 볼 수 없어요." },
+  { q:"우주의 작은 돌·먼지가 공기 속으로 들어와 밝게 빛나는 현상은?", options:["유성(별똥별)","혜성","오로라"], answer:"유성(별똥별)", explain:"별똥별은 진짜 별이 아니에요. 우주의 작은 돌 조각이 공기 속으로 아주 빠르게 들어오며 뜨거워져 빛나는 거예요." },
   { q:"국제우주정거장의 영어 줄임말은 무엇일까요?", options:["ISS","NASA","UFO"], answer:"ISS", explain:"ISS는 International Space Station의 줄임말이에요. 여러 나라가 함께 운영하는 우주 속 연구실이에요." },
   { q:"태양계에서 가장 큰 화산이 있는 행성은?", options:["화성","금성","목성"], answer:"화성", explain:"화성의 '올림푸스 몬스'는 태양계에서 가장 큰 화산이에요. 높이가 약 22 km로 에베레스트산의 2배가 넘어요." },
-  { q:"우주 공간에서는 소리가 들릴까요?", options:["잘 들린다","공기가 없어서 소리가 전달되지 않는다","별 가까이에서만 들린다"], answer:"공기가 없어서 소리가 전달되지 않는다", explain:"소리는 공기가 떨리면서 전달돼요. 우주 공간에는 공기가 거의 없어서 소리가 들리지 않아요." }
+  { q:"우주 공간에서는 소리가 들릴까요?", options:["잘 들린다","공기가 없어 소리가 안 들린다","별 가까이에서만 들린다"], answer:"공기가 없어 소리가 안 들린다", explain:"소리는 공기가 떨리면서 전달돼요. 우주 공간에는 공기가 거의 없어서 소리가 들리지 않아요." }
 ];
 
 const TOTAL_QUESTIONS = 15;
@@ -428,7 +490,7 @@ function showScreen(id){
   document.getElementById(id).classList.add('active');
   if(id !== 'screen-result') clearInterval(pollT);
   if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
-  window.scrollTo(0,0);
+  document.getElementById(id).scrollTop = 0;
 }
 
 /* ---------------- 기기 중복 참여 체크 ---------------- */
@@ -455,6 +517,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('blockNotice').style.display = 'block';
     document.getElementById('btnStart').disabled = true;
   }
+  if(!REMEMBER_IDENTITY){ LS.del('gb_name'); LS.del('gb_phone'); }   // 예전에 저장된 이름·번호 삭제
   if(REMEMBER_IDENTITY){
     const n = LS.get('gb_name'), p = LS.get('gb_phone');
     if(n && !$('inputName').value) $('inputName').value = n;
@@ -710,8 +773,9 @@ document.addEventListener('gesturechange', e => e.preventDefault());
 
 /* ---------------- 처음 화면으로 ---------------- */
 function goTitle(){
+  if(!confirmLeaveShipping()) return;
   if(pendingPayload && !confirm('아직 기록이 서버에 저장되지 않았어요.\n그래도 처음 화면으로 갈까요?')) return;
-  pendingPayload = null; me = null; lookupMode = false; prizeKey = '';
+  pendingPayload = null; me = null; lookupMode = false; prizeKey = ''; shipPending = false;
   clearInterval(pollT);
   if(!REMEMBER_IDENTITY){ $('inputName').value = ''; $('inputPhone').value = ''; }   // 공용 기기: 다음 사람을 위해 비움
   $('prizeCard').innerHTML = ''; $('prizeCard').style.display = 'none';
@@ -838,6 +902,8 @@ function renderPrize(d){
   const fk = 'sq_first_' + me.name + '_' + me.phone, first = d.rank === 1;
   const st = first ? (d.claimed ? 'claimed' : 'open') : (LS.get(fk) ? 'lost' : 'wait');
   if(first) LS.set(fk, '1');
+  shipPending = (st === 'open' && !d.closed);     // 1위인데 배송지를 아직 입력하지 않은 상태
+  if(shipPending) armLeaveGuard();
   const t1 = (d.top3 || [])[0], key = st + d.closed + (st === 'wait' && t1 ? t1.correct + '/' + t1.time : '');
   if(key === prizeKey) return;           // 입력 중인 폼이 자동 갱신으로 지워지지 않도록
   prizeKey = key; const c = $('prizeCard'); c.style.display = 'block';
@@ -845,7 +911,8 @@ function renderPrize(d){
   if(st === 'open' && d.closed) c.innerHTML = head + `<p>🥇 최종 <b>1위</b>이시지만, 운영이 종료되어(${CLOSE_TEXT}) <b>배송 정보를 더 이상 입력할 수 없어요.</b></p>
     <p class="closed-claim-note">배송 정보 입력 기간이 지났어요. 문의가 필요하시면 부천천문과학관 관리자에게 연락해 주세요.</p>`;
   else if(st === 'open') c.innerHTML = head + `<p>지금 <b>1위</b>예요! 🥇 상품을 집으로 보내드리려면 <b>배송 정보</b>가 필요해요. 1위가 아닌 분께는 주소·연락처를 받지 않아요.</p>
-    <p class="warn">⚠️ 순위는 계속 바뀔 수 있어요. ${d.closed ? '' : '운영 종료 시점의 1위께만 발송돼요. 1위 자리를 내주면 입력하신 정보는 <b>자동으로 삭제</b>돼요. 이 화면에서 순위를 계속 확인해 주세요.'}</p>` + claimForm();
+    <p class="warn">⚠️ 순위는 계속 바뀔 수 있어요. ${d.closed ? '' : '운영 종료 시점의 1위께만 발송돼요. 1위 자리를 내주면 입력하신 정보는 <b>자동으로 삭제</b>돼요. 이 화면에서 순위를 계속 확인해 주세요.'}</p>
+    ${d.closed ? '' : `<p class="warn">📌 <b>배송 정보를 제출하기 전에 브라우저(앱)를 닫거나 새로고침하면 입력하지 못할 수 있어요.</b><br>반드시 아래 <b>[배송 정보 제출]</b>까지 완료한 뒤 화면을 나가 주세요. 뒤로가기·처음으로·허브로 이동 시에는 한 번 더 확인 메시지가 나와요.</p>`}` + claimForm();
   else if(st === 'claimed') c.innerHTML = head + `<p class="ok">✅ 현재 1위이며 배송 정보가 등록되어 있어요.<br>${d.closed ? '🎉 최종 1위 확정! 입력하신 연락처로 안내드릴게요.<br>운영이 종료되어 배송 정보는 더 이상 수정할 수 없어요.' : '끝까지 1위를 지키면 발송돼요. 1위를 내주면 정보는 자동 삭제돼요.'}</p>
     ${d.closed ? '' : '<div style="text-align:center;"><button class="mini-btn" onclick="showForm()">✏️ 정보 다시 입력하기</button></div><div id="reform"></div>'}`;
   else if(st === 'lost') c.innerHTML = head + `<p class="warn">😢 아쉽게도 1위 자리를 다른 참가자에게 내주었어요.<br>입력하신 배송 정보는 <b>자동으로 삭제</b>돼요.</p>`;
@@ -857,16 +924,16 @@ function showForm(){ if(serverClosed || prizeClosed) return alert('운영이 종
 
 function claimForm(){
   return `<div class="pf">
-  <label>받는 분 이름<input type="text" id="cName" maxlength="20" autocomplete="name" enterkeyhint="next"></label>
-  <label>휴대전화 번호(숫자만)<input type="tel" id="cTel" maxlength="13" placeholder="01012345678" autocomplete="tel" inputmode="numeric" enterkeyhint="next"></label>
-  <label>주소 (동·호수까지 자세히 적어 주세요)<input type="text" id="cAddr" maxlength="150" autocomplete="street-address" enterkeyhint="done" placeholder="예) 인천시 ○○구 ○○로 12, 101동 1203호"></label>
+  <label>받는 분 이름<input class="arcade-input" type="text" id="cName" maxlength="20" autocomplete="name" enterkeyhint="next"></label>
+  <label>휴대전화 번호(숫자만)<input class="arcade-input" type="tel" id="cTel" maxlength="13" placeholder="01012345678" autocomplete="tel" inputmode="numeric" enterkeyhint="next"></label>
+  <label>주소 (동·호수까지 자세히 적어 주세요)<input class="arcade-input" type="text" id="cAddr" maxlength="150" autocomplete="street-address" enterkeyhint="done" placeholder="예) 인천시 ○○구 ○○로 12, 101동 1203호"></label>
   <details><summary>개인정보 수집·이용 안내 (펼쳐서 확인)</summary>
     · 수집 주체: 부천천문과학관<br>· 수집 항목: 받는 분 이름, 연락처, 주소(동·호수 포함)<br>· 이용 목적: 1위 상품 배송 및 당첨 안내<br>
     · 보유 기간: 상품 발송 후 30일 이내 파기<br>
     · 동의를 거부할 수 있으며, 거부 시 상품 발송이 어렵습니다.<br>· 상품은 국내 배송만 가능합니다.<br>· 주소나 연락처가 정확하지 않은 경우 배송이 불가합니다.<br>· 잘못된 정보로 인한 미발송 또는 오발송에 대해서는 책임지기 어려우니, 제출 전 한 번 더 확인 부탁드립니다.</details>
   <label class="chk"><input type="checkbox" id="cConsent"> [필수] 위 개인정보 수집·이용에 동의합니다.</label>
   <label class="chk"><input type="checkbox" id="cAge"> [필수] 만 14세 이상이거나, 만 14세 미만인 경우 법정대리인의 동의를 받았습니다.</label>
-  <button class="big-btn" id="btnClaim" onclick="sendClaim()">📦 배송 정보 제출</button></div>`;
+  <button class="launch-btn" id="btnClaim" onclick="sendClaim()">📦 배송 정보 제출</button></div>`;
 }
 
 let claiming = false;
@@ -907,7 +974,7 @@ function checkServerClosed(){
 }
 function applyClosed(){
   if(closedApplied) return;
-  closedApplied = true; serverClosed = true; quizRunning = false;
+  closedApplied = true; serverClosed = true; quizRunning = false; shipPending = false;
   clearTimeout(closeTimer); clearInterval(pollT); clearInterval(timerInterval);
   $('closedNotice').style.display = 'block';
   $('btnStart').disabled = true;
@@ -926,8 +993,35 @@ document.addEventListener('visibilitychange', () => {
   checkServerClosed();
   if($('screen-result').classList.contains('active') && me && !pendingPayload) refresh(false);
 });
-/* 퀴즈 중 실수로 새로고침·뒤로가기 시 확인 */
-window.addEventListener('beforeunload', e => { if(quizRunning){ e.preventDefault(); e.returnValue = ''; } });
+
+/* ---------------- 1위 배송지 미입력 상태에서 화면을 벗어날 때 한 번 더 확인 ----------------
+   (뒤로가기 · 처음으로 · 허브로 돌아가기). 브라우저/탭을 아예 닫는 것은 막을 수 없어 화면 안내문구로 알려 줌 */
+let shipPending = false, guardPushed = false;
+const SHIP_WARN = '⚠️ 아직 배송지를 입력하지 않으셨어요!\n\n현재 1위이지만 배송 정보를 제출하지 않으면 상품을 받으실 수 없어요.\n그래도 이 화면을 나갈까요?';
+function confirmLeaveShipping(){
+  if(!shipPending || serverClosed) return true;
+  return confirm(SHIP_WARN);
+}
+function armLeaveGuard(){
+  if(guardPushed) return;
+  try { history.pushState({ gbGuard:1 }, ''); guardPushed = true; } catch(e){}
+}
+window.addEventListener('popstate', () => {
+  if(!guardPushed) return;
+  guardPushed = false;
+  if(shipPending && !serverClosed && !confirm(SHIP_WARN)){ armLeaveGuard(); return; }   // 머무르기: 다시 뒤로가기 방어
+  shipPending = false;
+  history.back();                                                                        // 나가기: 한 단계 더 뒤로
+});
+['btnHubStart','btnHubResult','btnHubClosed'].forEach(id => {
+  $(id).addEventListener('click', e => {
+    if(!confirmLeaveShipping()){ e.preventDefault(); return; }
+    if(pendingPayload && !confirm('아직 기록이 서버에 저장되지 않았어요.\n그래도 허브로 이동할까요?')){ e.preventDefault(); return; }
+    shipPending = false;
+  });
+});
+/* 퀴즈 중 · 배송지 미입력 1위 상태에서 새로고침/닫기 시 브라우저 기본 확인창 */
+window.addEventListener('beforeunload', e => { if(quizRunning || (shipPending && !serverClosed)){ e.preventDefault(); e.returnValue = ''; } });
 </script>
 </body>
 </html>
