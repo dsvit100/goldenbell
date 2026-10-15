@@ -271,6 +271,25 @@
   }
   /* 휴대폰 기본 키보드가 올라오면 입력칸이 가려지지 않도록 아래 여백 확보 (visualViewport 기반) */
   body.vk-open .screen{padding-bottom:calc(var(--vk,0px) + 24px);}
+
+  /* ===== 시작 화면 버튼 영역: 큰 주 버튼 1개 + 보조 버튼 2개(가로 배치) ===== */
+  .title-actions{width:100%;max-width:440px;display:flex;flex-direction:column;gap:12px;margin-top:12px;}
+  .title-actions .btn-start{
+    width:100%;margin:0;padding:clamp(14px,2.4dvh,18px) 20px;
+    font-size:clamp(18px,4.8vw,21px);letter-spacing:.04em;border-radius:999px;
+    background:linear-gradient(135deg,#4FD8C4,#5b8dff);color:#04121f;
+    box-shadow:0 8px 22px rgba(79,216,196,.28);
+  }
+  .title-actions .sub-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .title-actions .sub-actions .rank-btn,
+  .title-actions .sub-actions .hub-btn{
+    margin:0;width:100%;min-height:48px;padding:10px 8px;border-radius:999px;
+    display:flex;align-items:center;justify-content:center;text-align:center;
+    font-size:clamp(13px,3.6vw,15px);font-weight:700;letter-spacing:0;line-height:1.25;white-space:nowrap;
+  }
+  .title-actions .sub-actions .rank-btn{background:rgba(245,200,107,.10);border:1.5px solid rgba(245,200,107,.65);color:var(--starlight);}
+  .title-actions .sub-actions .rank-btn:active{background:rgba(245,200,107,.22);}
+  .title-actions .sub-actions .hub-btn{background:transparent;border:1.5px solid rgba(183,192,232,.55);color:var(--text-dim);}
 </style>
 </head>
 <body oncontextmenu="return false;">
@@ -296,11 +315,15 @@
             </div>
           </div>
         </div>
-        <button class="launch-btn" id="btnStart" style="margin-top:10px;">퀴즈 시작하기</button>
         <div class="notice-box" id="closedNotice">🏁 운영이 종료되었어요.<br>참여해 주셔서 감사합니다. 아래에서 최종 순위를 확인할 수 있어요.</div>
-        <div class="notice-box" id="blockNotice">😊 이미 참여하셨습니다!<br>참여해 주셔서 감사합니다.</div>
-        <button class="rank-btn" id="btnLookup">🏆 내 순위 다시 확인하기</button>
-        <a class="ghost-btn hub-btn" id="btnHubStart" href="https://dsvit100.github.io/game_hub/">🏠 허브로 돌아가기</a>
+        <div class="notice-box" id="blockNotice">😊 이미 참여하셨습니다!<br>참여해 주셔서 감사합니다. 아래 [내 순위 확인]에서 순위를 볼 수 있어요.</div>
+        <div class="title-actions">
+          <button class="launch-btn btn-start" id="btnStart">퀴즈 시작하기</button>
+          <div class="sub-actions">
+            <button class="rank-btn" id="btnLookup">🏆 내 순위 확인</button>
+            <a class="ghost-btn hub-btn" id="btnHubStart" href="https://dsvit100.github.io/game_hub/">🏠 허브로</a>
+          </div>
+        </div>
         <p class="title-note" id="titleNote"></p>
         <div class="credit">
           © 부천천문과학관. All rights reserved.
@@ -494,12 +517,19 @@ function showScreen(id){
 }
 
 /* ---------------- 기기 중복 참여 체크 ---------------- */
-/* 테스트용: false = 중복 참여 제한 해제 / 실제 운영 시 true 로 변경 */
-const ENABLE_DEVICE_LIMIT = false;
+/* true = 기기당 1회만 참여 (서버에 기록이 저장된 뒤에 '참여 완료'로 처리) / false = 제한 없음(테스트용) */
+const ENABLE_DEVICE_LIMIT = true;
 
+/* 참여 완료로 보는 경우: ① 서버 저장이 확인된 기기  ② 결과를 아직 서버에 못 보내 기기에 보관 중인 기기(자동 재전송되므로 중복 기록 방지) */
 function hasAlreadyParticipated(){
   if(!ENABLE_DEVICE_LIMIT) return false;
-  return LS.get('spacequiz_done') === 'true';
+  return LS.get('spacequiz_done') === 'true' || !!LS.get('gb_pending');
+}
+/* 시작 화면의 '이미 참여' 안내와 시작 버튼 상태를 현재 상태에 맞게 갱신 */
+function applyParticipationUI(){
+  const done = hasAlreadyParticipated();
+  $('blockNotice').style.display = done ? 'block' : 'none';
+  $('btnStart').disabled = done || serverClosed;
 }
 function markParticipated(){
   if(!ENABLE_DEVICE_LIMIT) return;
@@ -513,10 +543,6 @@ window.addEventListener('DOMContentLoaded', () => {
     `순위 기준: ① 정답 수 ② 빠른 시간 ③ 먼저 참여한 순서<br>` +
     `입력하신 이름·번호 뒷 4자리는 순위 집계와 1위 확인에만 사용돼요.` +
     (ENABLE_DEVICE_LIMIT ? '<br>* 1인 1회 참여 가능합니다 (동일 기기 기준)' : '');
-  if(hasAlreadyParticipated()){
-    document.getElementById('blockNotice').style.display = 'block';
-    document.getElementById('btnStart').disabled = true;
-  }
   if(!REMEMBER_IDENTITY){ LS.del('gb_name'); LS.del('gb_phone'); }   // 예전에 저장된 이름·번호 삭제
   if(REMEMBER_IDENTITY){
     const n = LS.get('gb_name'), p = LS.get('gb_phone');
@@ -524,12 +550,14 @@ window.addEventListener('DOMContentLoaded', () => {
     if(p && !$('inputPhone').value) $('inputPhone').value = p;
   }
   resendStoredResult();
+  applyParticipationUI();
   checkServerClosed();
 });
 
 /* ---------------- 퀴즈 시작 ---------------- */
 document.getElementById('btnStart').addEventListener('click', () => {
-  if(hasAlreadyParticipated() || serverClosed) return;
+  if(serverClosed) return;
+  if(hasAlreadyParticipated()){ applyParticipationUI(); alert('이미 참여하셨어요.\n참여해 주셔서 감사합니다! [내 순위 확인]에서 순위를 볼 수 있어요.'); return; }
   const name = document.getElementById('inputName').value.replace(/\s+/g,' ').trim();
   const phone = document.getElementById('inputPhone').value.trim();
 
@@ -653,7 +681,7 @@ function finishQuiz(){
   clearInterval(timerInterval);
   const totalSec = totalMs / 1000;
 
-  markParticipated();
+  /* '참여 완료' 표시는 서버 저장이 확인된 뒤에 한다 (sendPending 참고) → 서버 문제로 저장이 안 돼도 참여 기회를 잃지 않음 */
 
   document.getElementById('resultCorrect').textContent = `${correctCount} / ${TOTAL_QUESTIONS}`;
   document.getElementById('resultTime').textContent = fmtTime(totalSec);
@@ -779,6 +807,7 @@ function goTitle(){
   clearInterval(pollT);
   if(!REMEMBER_IDENTITY){ $('inputName').value = ''; $('inputPhone').value = ''; }   // 공용 기기: 다음 사람을 위해 비움
   $('prizeCard').innerHTML = ''; $('prizeCard').style.display = 'none';
+  applyParticipationUI();
   showScreen('screen-start');
 }
 $('back-from-result').addEventListener('click', () => { playClick(); goTitle(); });
@@ -801,6 +830,7 @@ function sendPending(tries, seq){
     if(d && d.retry) throw new Error('server busy');
     if(seq !== sendSeq) return;
     pendingPayload = null; LS.del('gb_pending');
+    if(d && d.ok !== false && !d.error) markParticipated();      // 서버에 저장 확인 → 참여 완료
     renderStatus(d);
   }).catch(e => {
     if(seq !== sendSeq) return;
@@ -829,7 +859,12 @@ function resendStoredResult(){
   const raw = LS.get('gb_pending');
   if(!raw || !isConfigured() || pendingPayload) return;
   let payload; try { payload = JSON.parse(raw); } catch(e){ LS.del('gb_pending'); return; }
-  POST(payload).then(d => { if(d && d.retry) return; LS.del('gb_pending'); }).catch(() => {});
+  POST(payload).then(d => {
+    if(d && d.retry) return;
+    LS.del('gb_pending');
+    if(d && d.ok !== false && !d.error) markParticipated();      // 이전에 못 보낸 기록이 저장됨 → 참여 완료
+    applyParticipationUI();
+  }).catch(() => {});
 }
 window.addEventListener('online', resendStoredResult);
 
