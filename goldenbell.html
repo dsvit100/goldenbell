@@ -518,7 +518,7 @@ function showScreen(id){
 
 /* ---------------- 기기 중복 참여 체크 ---------------- */
 /* true = 기기당 1회만 참여 (서버에 기록이 저장된 뒤에 '참여 완료'로 처리) / false = 제한 없음(테스트용) */
-const ENABLE_DEVICE_LIMIT = true;
+const ENABLE_DEVICE_LIMIT = false;
 
 /* 참여 완료로 보는 경우: ① 서버 저장이 확인된 기기  ② 결과를 아직 서버에 못 보내 기기에 보관 중인 기기(자동 재전송되므로 중복 기록 방지) */
 function hasAlreadyParticipated(){
